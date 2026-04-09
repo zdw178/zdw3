@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CYBER STRIKE - 积分觉醒版</title>
+    <style>
+        :root {
+            --red: #ff2a2a; --blue: #00f3ff; --gold: #ffd700;
+            --pink: #ff00ea; --green: #00ff66; --glass: rgba(10, 15, 30, 0.7);
+        }
+        body {
+            margin: 0; overflow: hidden; background-color: #000; color: #fff;
+            font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh;
+        }
+        
+        #game-wrapper {
+            position: relative; width: 600px; height: 800px;
+            border: 2px solid transparent;
+            background-image: url('蓝狐动画标志.jpg');
+            background-size: cover; background-position: center;
+            overflow: hidden; transition: background-image 0.5s ease-in-out; 
+        }
+
+        @keyframes waveGlow {
+            0%   { box-shadow: 0 -20px 40px var(--blue), 0 20px 40px var(--pink), -20px 0 40px var(--gold), 20px 0 40px var(--blue); border: 6px solid var(--blue); }
+            25%  { box-shadow: 20px 0 40px var(--blue), -20px 0 40px var(--pink), 0 20px 40px var(--gold), 0 -20px 40px var(--blue); border: 6px solid var(--pink); }
+            50%  { box-shadow: 0 20px 40px var(--blue), 0 -20px 40px var(--pink), 20px 0 40px var(--gold), -20px 0 40px var(--blue); border: 6px solid var(--gold); }
+            75%  { box-shadow: -20px 0 40px var(--blue), 20px 0 40px var(--pink), 0 -20px 40px var(--gold), 0 20px 40px var(--blue); border: 6px solid var(--pink); }
+            100% { box-shadow: 0 -20px 40px var(--blue), 0 20px 40px var(--pink), -20px 0 40px var(--gold), 20px 0 40px var(--blue); border: 6px solid var(--blue); }
+        }
+        .menu-glow { animation: waveGlow 2s linear infinite; }
+        .battle-mode { border: 2px solid rgba(0, 243, 255, 0.5); box-shadow: 0 0 50px rgba(0, 243, 255, 0.2); }
+
+        canvas { display: block; width: 100%; height: 100%; position: relative; z-index: 1; }
+
+        .screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--glass); backdrop-filter: blur(5px); 
+            display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100;
+        }
+        .hidden { display: none !important; }
+        .title {
+            font-size: 50px; font-weight: 900; letter-spacing: 5px; margin-bottom: 30px;
+            color: transparent; -webkit-text-stroke: 2px var(--blue);
+            text-shadow: 0 0 20px rgba(0, 243, 255, 0.8); background: linear-gradient(to bottom, #fff, var(--blue)); -webkit-background-clip: text;
+        }
+        
+        input[type="text"] {
+            background: rgba(0, 243, 255, 0.15); border: 2px solid var(--blue); color: var(--blue);
+            padding: 15px; font-size: 20px; text-align: center; outline: none; margin-bottom: 20px; width: 250px; text-transform: uppercase; font-weight: bold;
+        }
+        input[type="text"]:focus { box-shadow: 0 0 20px var(--blue); background: rgba(0, 243, 255, 0.25); }
+        
+        .menu-btn {
+            position: relative; width: 250px; padding: 15px; margin: 10px 0; font-size: 18px; font-weight: bold;
+            cursor: pointer; background: rgba(0, 0, 0, 0.7); text-transform: uppercase; overflow: hidden;
+            border: 2px solid var(--blue); color: var(--blue); transition: all 0.3s;
+            box-shadow: inset 0 0 10px rgba(0, 243, 255, 0.2);
+        }
+        .menu-btn::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: all 0.4s ease;
+        }
+        .menu-btn:hover::before { left: 100%; }
+        .menu-btn:hover { background: var(--blue); color: #000; box-shadow: 0 0 20px var(--blue), inset 0 0 20px #fff; }
+        
+        .btn-red { border-color: var(--red); color: var(--red); box-shadow: inset 0 0 10px rgba(255, 42, 42, 0.2); } 
+        .btn-red:hover { background: var(--red); color: #000; box-shadow: 0 0 20px var(--red), inset 0 0 20px #fff; }
+        .btn-gold { border-color: var(--gold); color: var(--gold); box-shadow: inset 0 0 10px rgba(255, 215, 0, 0.2); } 
+        .btn-gold:hover { background: var(--gold); color: #000; box-shadow: 0 0 20px var(--gold), inset 0 0 20px #fff; }
+
+        .plane-cards { display: flex; gap: 15px; margin-bottom: 20px; }
+        .card { 
+            position: relative; padding: 15px; width: 140px; text-align: center; cursor: pointer; 
+            background: rgba(0,0,0,0.7); transition: 0.3s; overflow: hidden;
+        }
+        .card h3 { margin: 0 0 10px 0; font-size: 18px; } .card p { font-size: 12px; color: #ddd; margin: 5px 0; line-height: 1.4; }
+        
+        .card-red-diy { border-top: 4px solid #555; border-bottom: 4px solid #555; transform: skewX(-5deg); }
+        .card-red-diy > * { transform: skewX(5deg); } 
+        .card-red-diy.active-red { border-color: var(--red); box-shadow: 0 0 20px var(--red); background: rgba(255,42,42,0.1); }
+        
+        .card-blue-diy { border-left: 4px solid #555; border-right: 4px solid #555; border-radius: 15px; }
+        .card-blue-diy.active-blue { border-color: var(--blue); box-shadow: 0 0 20px var(--blue); background: rgba(0,243,255,0.1); }
+        
+        .card-gold-diy { outline: 2px dashed #555; outline-offset: -5px; }
+        .card-gold-diy.active-gold { outline-color: var(--gold); box-shadow: inset 0 0 20px var(--gold); background: rgba(255,215,0,0.1); }
+
+        .lb-container { width: 80%; text-align: left; }
+        .lb-tabs { display: flex; justify-content: space-around; margin-bottom: 15px; }
+        .lb-tab { cursor: pointer; color: #888; font-weight: bold; font-size: 20px; transition: 0.3s; }
+        .lb-tab.active { color: var(--gold); text-shadow: 0 0 10px var(--gold); }
+        .lb-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.2); }
+        
+        #hud { position: absolute; top: 0; left: 0; width: 100%; padding: 10px; box-sizing: border-box; pointer-events: none; display: flex; justify-content: space-between; z-index: 10; font-size: 12px; font-weight: bold;}
+        .hud-active { display: block !important; }
+        .stat-bar { width: 100px; height: 6px; background: rgba(255,255,255,0.2); border: 1px solid #fff; margin: 3px 0; }
+        .fill { height: 100%; transition: width 0.2s; }
+        
+        #controls-hud { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); text-align: center; font-size: 13px; color: rgba(255,255,255,0.6); z-index: 5; pointer-events: none; display: none; background: rgba(0,0,0,0.4); padding: 5px 15px; border-radius: 8px; border: 1px solid rgba(0,243,255,0.3); }
+
+        #boss-hud { position: absolute; top: 50px; left: 50%; transform: translateX(-50%); text-align: center; display: none; width: 70%; z-index: 10;}
+        #boss-hp-bar { width: 100%; height: 12px; border: 2px solid var(--red); }
+        #boss-hp-fill { width: 100%; height: 100%; background: var(--red); transition: width 0.1s; }
+        
+        #floating-text { position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%); font-size: 40px; font-weight: bold; color: var(--red); text-shadow: 0 0 20px red; pointer-events: none; opacity: 0; transition: opacity 0.5s; z-index: 50; text-align: center; width: 100%; }
+    </style>
+</head>
+<body>
+
+<div id="game-wrapper" class="menu-glow">
+    <canvas id="gameCanvas" width="600" height="800"></canvas>
+    
+    <div id="hud">
+        <div id="p1-hud" style="display: none; color: #fff; text-shadow: 1px 1px 2px #000;">
+            <div>P1 <span id="p1-name" style="color:var(--gold)"></span> | DMG: <span id="p1-dmg-total">0</span> | SCORE: <span id="p1-score" style="color:var(--green)">0</span></div>
+            <div>HP <span id="p1-hp-val"></span></div><div class="stat-bar"><div id="p1-hp" class="fill" style="background:var(--green)"></div></div>
+            <div>ULT <span id="p1-en-val"></span></div><div class="stat-bar"><div id="p1-en" class="fill" style="background:var(--gold)"></div></div>
+            <div style="color:var(--blue); margin-top:5px;">LVL: <span id="p1-streams">1</span> | DMG UP: +<span id="p1-dmg-buff">0</span></div>
+            <div>BOMBS: <span id="p1-bombs">3</span></div>
+        </div>
+        
+        <div id="controls-hud">
+            <div style="color:var(--red); margin-bottom: 3px;">[P1] W A S D 移动 &nbsp;|&nbsp; J 开火 &nbsp;|&nbsp; U 大招 &nbsp;|&nbsp; I 核弹</div>
+            <div id="p2-controls-text" style="color:var(--blue); display:none;">[P2] 方向键 移动 &nbsp;|&nbsp; Num 1 开火 &nbsp;|&nbsp; 2 大招 &nbsp;|&nbsp; 3 核弹</div>
+            <div style="color:#aaa; font-size: 11px; margin-top: 3px;">[ESC] 暂停 / 撤退</div>
+        </div>
+
+        <div id="p2-hud" style="display: none; color: #fff; text-align: right; text-shadow: 1px 1px 2px #000;">
+            <div>SCORE: <span id="p2-score" style="color:var(--green)">0</span> | DMG: <span id="p2-dmg-total">0</span> | P2 <span id="p2-name" style="color:var(--gold)"></span></div>
+            <div><span id="p2-hp-val"></span> HP</div><div class="stat-bar" style="margin-left:auto"><div id="p2-hp" class="fill" style="background:var(--green)"></div></div>
+            <div><span id="p2-en-val"></span> ULT</div><div class="stat-bar" style="margin-left:auto"><div id="p2-en" class="fill" style="background:var(--gold)"></div></div>
+            <div style="color:var(--blue); margin-top:5px;">LVL: <span id="p2-streams">1</span> | DMG UP: +<span id="p2-dmg-buff">0</span></div>
+            <div>BOMBS: <span id="p2-bombs">3</span></div>
+        </div>
+    </div>
+    
+    <div id="boss-hud"><div style="color: var(--red); font-weight: bold; margin-bottom: 5px; text-shadow: 0 0 5px #000;">ANNIHILATOR NAILONG</div><div id="boss-hp-bar"><div id="boss-hp-fill"></div></div></div>
+    <div id="floating-text"></div>
+
+    <div id="screen-login" class="screen">
+        <div class="title">CYBER STRIKE</div>
+        <div style="color: var(--gold); margin-bottom: 10px; font-weight: bold;">ENTER PILOT ID:</div>
+        <input type="text" id="player-name-input" maxlength="10" placeholder="e.g. ZERO">
+        <button class="menu-btn" onclick="login()">进入系统 (ACCESS)</button>
+    </div>
+
+    <div id="screen-menu" class="screen hidden">
+        <div class="title" style="font-size: 35px;">MAIN MENU</div>
+        <div style="color: var(--gold); margin-bottom: 20px; font-weight: bold; text-shadow: 0 0 5px #000;">WELCOME, <span id="display-name"></span></div>
+        <button class="menu-btn" onclick="gotoDifficulty(false)">单人出击 (SOLO)</button>
+        <button class="menu-btn btn-red" onclick="gotoDifficulty(true)">双人协同 (CO-OP)</button>
+        <button class="menu-btn btn-gold" onclick="showLeaderboard()">伤害排行榜 (RANKS)</button>
+        <button class="menu-btn" style="border-color:#fff; color:#fff;" onclick="reLogin()">重新登录 (RE-LOGIN)</button>
+    </div>
+
+    <div id="screen-difficulty" class="screen hidden">
+        <div class="title" style="font-size: 35px;">SELECT DIFFICULTY</div>
+        <button class="menu-btn" style="border-color: #00ff66; color: #00ff66;" onclick="gotoSelect(1)">卫星级 (EASY)</button>
+        <button class="menu-btn" onclick="gotoSelect(2)">行星级 (NORMAL)</button>
+        <button class="menu-btn btn-red" onclick="gotoSelect(3)">恒星级 (HARD)</button>
+        <button class="menu-btn" style="border-color:#fff; color:#fff; margin-top:20px;" onclick="switchScreen('screen-menu')">返回上级 (BACK)</button>
+    </div>
+
+    <div id="screen-select" class="screen hidden">
+        <h2 style="color:var(--gold); margin-bottom: 10px; text-shadow: 0 0 5px #000;" id="select-title">P1 请选择战机</h2>
+        <div class="plane-cards">
+            <div class="card card-red-diy" id="card-red" onclick="selectPlane('red')">
+                <div>
+                    <h3 style="color: var(--red);">火无极</h3>
+                    <p>射速：极快<br>伤害：中等<br>移速：极快</p>
+                    <p style="color:var(--red); font-weight:bold;">终极：5秒暴走追踪</p>
+                </div>
+            </div>
+            <div class="card card-blue-diy" id="card-blue" onclick="selectPlane('blue')">
+                <h3 style="color: var(--blue);">沧海</h3>
+                <p>射速：缓慢<br>伤害：超高<br>移速：偏慢</p>
+                <p style="color:var(--blue); font-weight:bold;">终极：毁天灭地核弹</p>
+            </div>
+            <div class="card card-gold-diy" id="card-gold" onclick="selectPlane('gold')">
+                <h3 style="color: var(--gold);">光影驹</h3>
+                <p>射速：光束<br>伤害：穿透激光<br>移速：中等</p>
+                <p style="color:var(--gold); font-weight:bold;">终极：极光增幅</p>
+            </div>
+        </div>
+        <button class="menu-btn" onclick="confirmSelection()" id="btn-confirm-select">确认选择 (CONFIRM)</button>
+        <button class="menu-btn btn-red" onclick="cancelSelection()" style="margin-top: 10px; width: 250px;">返回上级 (BACK)</button>
+    </div>
+
+    <div id="screen-pause" class="screen hidden" style="z-index: 200;">
+        <div class="title" style="font-size: 45px; color: var(--red); -webkit-text-stroke: 1px var(--red);">GAME PAUSED</div>
+        <div style="color: #fff; font-size: 20px; margin-bottom: 30px; text-shadow: 0 0 5px #000;">系统已挂起，是否确认撤退？</div>
+        <button class="menu-btn btn-red" onclick="abortGameConfirm()">确认退出 (QUIT)</button>
+        <button class="menu-btn" onclick="resumeGame()">返回战斗 (RESUME)</button>
+    </div>
+
+    <div id="screen-end" class="screen hidden">
+        <div class="title" id="end-title" style="font-size: 50px; text-align: center;">MISSION COMPLETE</div>
+        <div style="color: #fff; font-size: 20px; margin-bottom: 30px; text-align: center;">
+            总输出伤害: <span id="end-dmg" style="color: var(--gold); font-size: 28px; font-weight: bold;">0</span><br><br>
+            总战斗积分: <span id="end-score" style="color: var(--green); font-size: 28px; font-weight: bold;">0</span>
+        </div>
+        <button class="menu-btn btn-gold" onclick="exitToMenu()">退出本场游戏 (EXIT)</button>
+    </div>
+
+    <div id="screen-leaderboard" class="screen hidden">
+        <h2 style="color: var(--gold); margin-bottom: 20px; text-shadow: 0 0 5px #000;">全服伤害排行榜</h2>
+        <div class="lb-container">
+            <div class="lb-tabs">
+                <div class="lb-tab active" id="tab-solo" onclick="renderLB('solo')">单人榜</div>
+                <div class="lb-tab" id="tab-coop" onclick="renderLB('coop')">双人榜</div>
+            </div>
+            <div id="lb-content" style="background: rgba(0,0,0,0.7); padding: 15px; border: 1px solid var(--gold); height: 300px; overflow-y: auto;"></div>
+        </div>
+        <button class="menu-btn" style="margin-top:30px;" onclick="hideLeaderboard()">返回 (BACK)</button>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playWeaponSFX(type) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        const now = audioCtx.currentTime;
+
+        if (type === 'rapid') { 
+            osc.type = 'square'; osc.frequency.setValueAtTime(800, now); osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+            gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1); osc.start(now); osc.stop(now + 0.1);
+        } else if (type === 'rocket') { 
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(30, now + 0.2);
+            gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2); osc.start(now); osc.stop(now + 0.2);
+        } else if (type === 'laser') { 
+            osc.type = 'sine'; osc.frequency.setValueAtTime(1200, now); osc.frequency.linearRampToValueAtTime(600, now + 0.05);
+            gain.gain.setValueAtTime(0.05, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.05); osc.start(now); osc.stop(now + 0.05);
+        } else if (type === 'nuke_launch') { 
+            osc.type = 'sine'; osc.frequency.setValueAtTime(200, now); osc.frequency.linearRampToValueAtTime(800, now + 1);
+            gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0, now + 1); osc.start(now); osc.stop(now + 1);
+        } else if (type === 'nuke_boom') { 
+            osc.type = 'square'; osc.frequency.setValueAtTime(100, now); osc.frequency.exponentialRampToValueAtTime(10, now + 1.5);
+            gain.gain.setValueAtTime(0.5, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 1.5); osc.start(now); osc.stop(now + 1.5);
+        } else if (type === 'homing_shot') { 
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(1500, now); osc.frequency.exponentialRampToValueAtTime(500, now + 0.1);
+            gain.gain.setValueAtTime(0.08, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1); osc.start(now); osc.stop(now + 0.1);
+        } else if (type === 'boss_shoot1') {
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(300, now); osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1); osc.start(now); osc.stop(now + 0.1);
+        } else if (type === 'boss_shoot2') {
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(400, now); osc.frequency.exponentialRampToValueAtTime(50, now + 0.15);
+            gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15); osc.start(now); osc.stop(now + 0.15);
+        } else if (type === 'boss_sword') { 
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(3000, now); osc.frequency.exponentialRampToValueAtTime(200, now + 0.3);
+            gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3); osc.start(now); osc.stop(now + 0.3);
+        }
+    }
+
+    const hitSound = new Audio('刀盾音频.mp3'); hitSound.volume = 0.3; 
+    const bossSound = new Audio('我是奶龙.mp3'); bossSound.loop = true; bossSound.volume = 0.5; 
+    const stampedeSound = new Audio('刀盾音频.mp3'); stampedeSound.loop = true; stampedeSound.volume = 0.4;
+
+    const imgs = { red: new Image(), blue: new Image(), gold: new Image(), minion_dog: new Image(), boss_p1: new Image(), boss_p2: new Image() };
+    const imgLoaded = { red: false, blue: false, gold: false, minion_dog: false, boss_p1: false, boss_p2: false };
+    
+    function setupImage(key, src) {
+        imgs[key].src = src; imgs[key].onload = () => imgLoaded[key] = true;
+        imgs[key].onerror = () => { console.warn(`图片 ${src} 加载失败，将使用Fallback处理。`); imgLoaded[key] = false; };
+    }
+    setupImage('red', '火无极.png'); setupImage('blue', '沧海.png'); setupImage('gold', '光影驹.png');
+    setupImage('minion_dog', '刀盾.jpg'); setupImage('boss_p1', '糖丸奶龙1.png'); 
+    
+    // 【修复名称确保读取】
+    setupImage('boss_p2', '暴躁大奶龙1.png'); 
+
+    const PlaneConfig = {
+        red: { name: '火无极', color: '#ff2a2a', spd: 8, dmg: 25, fireRate: 6, bulletType: 'rapid', ultType: 'homing', bulletDmg: 1 },
+        blue: { name: '沧海', color: '#00f3ff', spd: 5.5, dmg: 120, fireRate: 35, bulletType: 'rocket', ultType: 'nuke', bulletDmg: 3 },
+        gold: { name: '光影驹', color: '#ffd700', spd: 6, dmg: 20, fireRate: 4, bulletType: 'laser', ultType: 'rainbow', bulletDmg: 1 } 
+    };
+
+    let appState = { playerName: 'GUEST', isCoop: false, difficulty: 2, p1Plane: 'red', p2Plane: 'blue', selectingP2: false };
+    let gameEnv = { running: false, gameOver: false, paused: false, frame: 0 };
+    let entities = { players: [], bullets: [], enemies: [], particles: [], items: [], boss: null };
+    let floatTexts = []; 
+    
+    const keys = {};
+    window.addEventListener('keydown', e => { 
+        keys[e.key] = true; if(e.key.length === 1) keys[e.key.toLowerCase()] = true; keys[e.code] = true; 
+        if (e.key === 'Escape' && gameEnv.running && !gameEnv.gameOver) pauseGame(); 
+    });
+    window.addEventListener('keyup', e => { 
+        keys[e.key] = false; if(e.key.length === 1) keys[e.key.toLowerCase()] = false; keys[e.code] = false; 
+    });
+
+    function getLB() { let lb = localStorage.getItem('cyberStrikeLB'); return lb ? JSON.parse(lb) : { solo: [], coop: [] }; }
+    function saveLB(mode, names, totalDamage) { let lb = getLB(); let entryName = mode === 'solo' ? names[0] : `${names[0]} & P2`; lb[mode].push({ name: entryName, dmg: Math.floor(totalDamage) }); lb[mode].sort((a, b) => b.dmg - a.dmg); lb[mode] = lb[mode].slice(0, 10); localStorage.setItem('cyberStrikeLB', JSON.stringify(lb)); }
+    function switchScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden')); if(id) document.getElementById(id).classList.remove('hidden'); }
+    function login() { appState.playerName = document.getElementById('player-name-input').value.trim() || 'GUEST'; document.getElementById('display-name').innerText = appState.playerName; switchScreen('screen-menu'); }
+    function reLogin() { switchScreen('screen-login'); } 
+    
+    function gotoDifficulty(coop) { appState.isCoop = coop; switchScreen('screen-difficulty'); }
+    function gotoSelect(diff) { appState.difficulty = diff; appState.selectingP2 = false; document.getElementById('select-title').innerText = `${appState.playerName} 请选择战机`; switchScreen('screen-select'); selectPlane('red'); }
+    function selectPlane(type) { document.querySelectorAll('.card').forEach(c => c.classList.remove('active-red', 'active-blue', 'active-gold')); document.getElementById(`card-${type}`).classList.add(`active-${type}`); if(!appState.selectingP2) appState.p1Plane = type; else appState.p2Plane = type; }
+    function confirmSelection() { if(appState.isCoop && !appState.selectingP2) { appState.selectingP2 = true; document.getElementById('select-title').innerText = `P2 (本地伙伴) 请选择战机`; selectPlane('blue'); return; } switchScreen(''); startGame(); }
+    function cancelSelection() { if (appState.selectingP2) { appState.selectingP2 = false; document.getElementById('select-title').innerText = `${appState.playerName} 请选择战机`; selectPlane(appState.p1Plane); } else { switchScreen('screen-difficulty'); } }
+    function showLeaderboard() { switchScreen('screen-leaderboard'); renderLB('solo'); }
+    function hideLeaderboard() { switchScreen('screen-menu'); }
+    function renderLB(mode) { document.getElementById('tab-solo').className = `lb-tab ${mode==='solo'?'active':''}`; document.getElementById('tab-coop').className = `lb-tab ${mode==='coop'?'active':''}`; let data = getLB()[mode]; let html = data.map((d, i) => `<div class="lb-row"><span>#${i+1} ${d.name}</span><span style="color:var(--gold)">${d.dmg} DMG</span></div>`).join(''); document.getElementById('lb-content').innerHTML = html || '<div style="text-align:center; color:#ccc; margin-top:50px;">NO DATA</div>'; }
+
+    class Explosion {
+        constructor(x, y, dmg, owner) { this.x = x; this.y = y; this.dmg = dmg; this.owner = owner; this.r = 10; this.active = true; this.alpha = 1; this.hasDamaged = false; }
+        draw() { ctx.save(); ctx.globalAlpha = Math.max(0, this.alpha); ctx.shadowBlur = 50; ctx.shadowColor = '#00f3ff'; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI*2); ctx.fill(); ctx.restore(); }
+        update() { 
+            this.r += 20; this.alpha -= 0.02; 
+            if (!this.hasDamaged && this.r > 150) { 
+                this.hasDamaged = true; 
+                let maxDist = 400;
+                entities.enemies.forEach(e => { 
+                    let dist = Math.hypot(e.x - this.x, e.y - this.y);
+                    if (dist < maxDist) { let multiplier = Math.max(0.1, 1 - (dist / maxDist)); dealDamage(e, this.dmg * multiplier, this.owner); }
+                }); 
+                if (entities.boss && !entities.boss.dead) { 
+                    let dist = Math.hypot(entities.boss.x - this.x, entities.boss.y - this.y);
+                    if (dist < 500) { let multiplier = Math.max(0.1, 1 - (dist / 500)); dealDamage(entities.boss, this.dmg * multiplier, this.owner); }
+                } 
+                entities.bullets.forEach(eb => { if (eb.isEnemy && Math.hypot(eb.x - this.x, eb.y - this.y) < maxDist + 100) eb.active = false; });
+            } 
+            if (this.alpha <= 0) this.active = false; 
+        }
+    }
+
+    class Player {
+        constructor(id, isP2, planeKey) { 
+            this.id = id; this.isP2 = isP2; this.cfg = PlaneConfig[planeKey]; this.planeKey = planeKey; 
+            this.x = isP2 ? canvas.width/2 + 50 : canvas.width/2 - 50; this.y = canvas.height - 100; 
+            this.w = 40; this.h = 40; this.hp = 100; this.maxHp = 100; this.absoluteMaxHp = 200; 
+            this.energy = 0; this.bombs = 3; this.damageDealt = 0; this.score = 0; 
+            
+            this.damageBuff = 0; this.fireRateBuff = 0; this.streams = 1; this.fireTimer = 0; this.isUlt = false; this.ultTimer = 0; this.isFiringLaser = false; 
+            this.invincibleTimer = 0; this.deadFlag = false; this.bombCooldown = 0; 
+            this.ctrl = isP2 ? { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight', fire: '1', ult: '2', bomb: '3' } : { up: 'w', down: 's', left: 'a', right: 'd', fire: 'j', ult: 'u', bomb: 'i' }; 
+        }
+        get currentDamage() { return this.cfg.dmg + this.damageBuff; }
+        get currentCooldown() { return Math.max(2, this.cfg.fireRate - this.fireRateBuff); }
+
+        draw() {
+            if (this.hp <= 0) return;
+            if (this.invincibleTimer > 0 && gameEnv.frame % 10 < 5) return; 
+
+            ctx.save(); ctx.translate(this.x, this.y);
+            if (this.isFiringLaser || (this.isUlt && this.cfg.ultType === 'rainbow')) { let isRainbow = this.isUlt && this.cfg.ultType === 'rainbow'; let beamW = isRainbow ? this.w * 0.4 * 1.5 : 10 + this.streams * 4; let bColor = isRainbow ? `hsl(${gameEnv.frame*15 % 360}, 100%, 50%)` : this.cfg.color; ctx.shadowBlur = 30; ctx.shadowColor = bColor; ctx.fillStyle = `rgba(255,255,255,0.9)`; ctx.fillRect(-beamW/2, -this.y, beamW, this.y); ctx.strokeStyle = bColor; ctx.lineWidth = isRainbow ? 6 : 3; ctx.strokeRect(-beamW/2, -this.y, beamW, this.y); }
+            if (imgLoaded[this.planeKey]) { ctx.shadowBlur = 15; ctx.shadowColor = this.cfg.color; ctx.drawImage(imgs[this.planeKey], -this.w/2, -this.h/2, this.w, this.h); } else { ctx.shadowBlur = 10; ctx.shadowColor = this.cfg.color; ctx.fillStyle = this.cfg.color; ctx.beginPath(); ctx.moveTo(0, -this.h/2); ctx.lineTo(this.w/2, this.h/2); ctx.lineTo(0, this.h/4); ctx.lineTo(-this.w/2, this.h/2); ctx.fill(); }
+            if (keys[this.ctrl.up] && !gameEnv.gameOver && !gameEnv.paused) { ctx.fillStyle = '#fff'; ctx.fillRect(-3, this.h/2, 6, 10 + Math.random()*10); }
+            ctx.restore();
+        }
+
+        fireLaserInstant(isUlt) {
+            let beamW = isUlt ? this.w * 0.4 * 1.5 : 10 + this.streams * 4; let laserBeam = { x: this.x, y: this.y / 2, w: beamW, h: this.y }; let dmg = isUlt ? this.currentDamage * 2 : this.currentDamage; 
+            entities.enemies.forEach(e => { if (e.active && checkCollision(laserBeam, e)) dealDamage(e, dmg, this); });
+            if (entities.boss && !entities.boss.dead && checkCollision(laserBeam, entities.boss)) { dealDamage(entities.boss, dmg, this); }
+            entities.bullets.filter(b => b.isEnemy).forEach(eb => {
+                if (eb.active && checkCollision(laserBeam, eb)) { eb.bulletHp -= this.cfg.bulletDmg; if (eb.bulletHp <= 0) { eb.active = false; spawnParticles(eb.x, eb.y, 5, eb.color); } }
+            });
+        }
+
+        update() {
+            if (this.hp <= 0 || gameEnv.gameOver) return;
+            if (this.invincibleTimer > 0) this.invincibleTimer--;
+            if (this.bombCooldown > 0) this.bombCooldown--;
+            
+            let speed = this.cfg.spd;
+            if (keys[this.ctrl.left] && this.x > this.w/2) this.x -= speed;
+            if (keys[this.ctrl.right] && this.x < canvas.width - this.w/2) this.x += speed;
+            if (keys[this.ctrl.up] && this.y > this.h/2) this.y -= speed;
+            if (keys[this.ctrl.down] && this.y < canvas.height - this.h/2) this.y += speed;
+
+            if (this.fireTimer > 0) this.fireTimer--;
+            this.isFiringLaser = false;
+
+            if ((keys[this.ctrl.fire] || keys['Numpad1']) && !this.isUlt) {
+                if (this.cfg.bulletType === 'laser') { this.isFiringLaser = true; if (this.fireTimer <= 0) { this.fireLaserInstant(false); this.fireTimer = this.currentCooldown; playWeaponSFX('laser'); } } 
+                else { 
+                    if (this.fireTimer <= 0) { 
+                        let s = this.streams; let spread = 0.2; let start = -(s-1)/2 * spread; 
+                        for(let i=0; i<s; i++) { 
+                            let vy = this.cfg.bulletType === 'rocket' ? -8 : -15; 
+                            entities.bullets.push(new Bullet(this.x, this.y - this.h/2, start + i*spread, vy, this.currentDamage, this.cfg.color, false, this, 'normal', 1, this.cfg.bulletDmg)); 
+                        } 
+                        this.fireTimer = this.currentCooldown; playWeaponSFX(this.cfg.bulletType); 
+                    } 
+                }
+            }
+
+            if ((keys[this.ctrl.ult] || keys['Numpad2']) && this.energy >= 100 && !this.isUlt) {
+                this.energy = 0; this.isUlt = true; 
+                if (this.cfg.ultType === 'nuke') { entities.bullets.push(new Bullet(this.x, this.y - this.h, 0, 'nuke', this.currentDamage * 50, this.cfg.color, false, this)); this.ultTimer = 1; playWeaponSFX('nuke_launch'); } 
+                else if (this.cfg.ultType === 'homing') { this.ultTimer = 300; } 
+                else if (this.cfg.ultType === 'rainbow') { this.ultTimer = 150; }
+            }
+
+            if ((keys[this.ctrl.bomb] || keys['Numpad3']) && this.bombs > 0 && !this.isUlt && this.bombCooldown <= 0) { this.bombs--; this.bombCooldown = 30; useBomb(this.id); }
+
+            if (this.isUlt) {
+                this.ultTimer--;
+                if (this.cfg.ultType === 'homing') { 
+                    if (this.ultTimer % 8 === 0) { 
+                        for(let i=0; i<3; i++) { let b = new Bullet(this.x, this.y-this.h/2, (Math.random()-0.5)*15, -5, this.currentDamage*1.5, this.cfg.color, false, this, 'homing', 1, this.cfg.bulletDmg); entities.bullets.push(b); } 
+                        playWeaponSFX('homing_shot'); 
+                    } 
+                } 
+                else if (this.cfg.ultType === 'rainbow') { this.fireLaserInstant(true); if(gameEnv.frame % 10 === 0) playWeaponSFX('laser'); }
+                if (this.ultTimer <= 0) this.isUlt = false;
+            }
+            this.updateUI();
+        }
+        
+        updateUI() { 
+            let pfx = this.isP2 ? 'p2' : 'p1'; 
+            document.getElementById(`${pfx}-dmg-total`).innerText = Math.floor(this.damageDealt); 
+            document.getElementById(`${pfx}-score`).innerText = Math.floor(this.score); 
+            let hpBar = document.getElementById(`${pfx}-hp`);
+            hpBar.style.transition = this.hp <= 0 ? 'none' : 'width 0.2s'; hpBar.style.width = Math.max(0, (this.hp/this.maxHp)*100) + '%'; 
+            document.getElementById(`${pfx}-hp-val`).innerText = `${Math.floor(Math.max(0, this.hp))}/${this.maxHp}`; 
+            document.getElementById(`${pfx}-en`).style.width = this.energy + '%'; document.getElementById(`${pfx}-en-val`).innerText = Math.floor(this.energy) + '%'; 
+            document.getElementById(`${pfx}-bombs`).innerText = this.bombs; 
+            document.getElementById(`${pfx}-streams`).innerText = this.streams; document.getElementById(`${pfx}-dmg-buff`).innerText = this.damageBuff;
+        }
+    }
+    
+    class Bullet { 
+        constructor(x, y, vx, vy, dmg, color, isEnemy, owner, type = 'normal', bulletHp = 1, bulletDmg = 1) { 
+            this.x = x; this.y = y; this.vx = vx; this.vy = vy; this.dmg = dmg; this.color = color; this.isEnemy = isEnemy; this.owner = owner; this.active = true; 
+            this.type = type; this.homing = (type === 'homing'); this.isNuke = (type === 'nuke' || vy === 'nuke'); 
+            this.bulletHp = bulletHp; this.bulletDmg = bulletDmg; 
+            if (this.isNuke) { this.vy = -3; this.r = 15; } else if (this.type === 'sword') { this.w = 120; this.h = 40; } else { this.r = isEnemy ? 6 : 4; } 
+        } 
+        draw() { 
+            if (this.isNuke) { ctx.shadowBlur = 30; ctx.shadowColor = '#00f3ff'; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI*2); ctx.fill(); ctx.strokeStyle = '#00f3ff'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(this.x, this.y, this.r + Math.sin(gameEnv.frame*0.3)*8 + 5, 0, Math.PI*2); ctx.stroke(); return; } 
+            if (this.type === 'sword') {
+                ctx.save(); ctx.translate(this.x, this.y); let angle = Math.atan2(this.vy, this.vx) - Math.PI/2; ctx.rotate(angle);
+                ctx.shadowBlur = 20; ctx.shadowColor = this.color; ctx.fillStyle = this.color; 
+                ctx.beginPath(); ctx.moveTo(-this.w/2, 0); ctx.quadraticCurveTo(0, -this.h, this.w/2, 0); ctx.quadraticCurveTo(0, -this.h*0.3, -this.w/2, 0); ctx.fill(); ctx.restore(); return;
+            }
+            ctx.shadowBlur = 10; ctx.shadowColor = this.color; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI*2); ctx.fill(); 
+        } 
+        update() { 
+            if (this.isNuke) { 
+                this.y += this.vy; let hitBoss = entities.boss && !entities.boss.dead && !entities.boss.isInvincible && Math.abs(this.x - entities.boss.x) < entities.boss.w/2 + 50 && Math.abs(this.y - entities.boss.y) < entities.boss.h/2 + 50; 
+                if (hitBoss || this.y < 200) { this.active = false; entities.particles.push(new Explosion(this.x, this.y, this.dmg, this.owner)); playWeaponSFX('nuke_boom'); } return; 
+            } 
+            if (this.homing && this.active && !this.isEnemy) { 
+                let target = null; if (entities.boss && !entities.boss.dead && !entities.boss.isInvincible && !entities.boss.spawning) target = entities.boss; else { let minDist = Infinity; entities.enemies.forEach(e => { let d = Math.hypot(e.x - this.x, e.y - this.y); if(d < minDist) { minDist = d; target = e; } }); } 
+                if (target) { let dx = target.x - this.x; let dy = target.y - this.y; let dist = Math.hypot(dx, dy); if(dist > 0) { this.vx += (dx/dist) * 0.8; this.vy += (dy/dist) * 0.8; let curSpeed = Math.hypot(this.vx, this.vy); if(curSpeed > 12) { this.vx = (this.vx/curSpeed)*12; this.vy = (this.vy/curSpeed)*12; } } } 
+            } 
+            if (this.homing && this.active && this.isEnemy) {
+                let target = entities.players.find(p => p.hp > 0);
+                if (target) { let dx = target.x - this.x; let dy = target.y - this.y; let dist = Math.hypot(dx, dy); if(dist > 0) { this.vx += (dx/dist) * 0.2; this.vy += (dy/dist) * 0.2; let curSpeed = Math.hypot(this.vx, this.vy); if(curSpeed > 5) { this.vx = (this.vx/curSpeed)*5; this.vy = (this.vy/curSpeed)*5; } } }
+            }
+            this.x += this.vx; this.y += this.vy; if(this.y < -150 || this.y > canvas.height+150 || this.x < -150 || this.x > canvas.width+150) this.active = false; 
+        } 
+    }
+
+    class Enemy {
+        constructor(x, y, hp, type='normal') { 
+            this.type = type;
+            this.hp = hp; this.maxHp = hp; this.w = 40; this.h = 40; this.active = true; this.tookDamage = false; this.isStampede = false; 
+            
+            if (type === 'normal') {
+                this.x = x; this.y = y; this.vx = 0; this.vy = 1.5 + Math.random();
+            } else if (type === 'bomber') {
+                this.dir = Math.random() > 0.5 ? 1 : -1;
+                this.x = this.dir === 1 ? -50 : canvas.width + 50;
+                this.y = y; this.vx = this.dir * 3; this.vy = 0; this.frame = 0;
+            }
+        }
+        draw() {
+            ctx.save(); ctx.translate(this.x, this.y); 
+            if (this.tookDamage && this.hp > 0) { ctx.fillStyle = 'rgba(255,0,0,0.3)'; ctx.fillRect(-this.w/2, -this.h/2-10, this.w, 4); ctx.fillStyle = '#ff2a2a'; ctx.fillRect(-this.w/2, -this.h/2-10, this.w * (this.hp/this.maxHp), 4); }
+            if (imgLoaded.minion_dog) { ctx.shadowBlur = 10; ctx.shadowColor = '#fff'; ctx.drawImage(imgs.minion_dog, -this.w/2, -this.h/2, this.w, this.h); } else { ctx.shadowBlur = 10; ctx.shadowColor = '#ff2a2a'; ctx.strokeStyle = '#ff2a2a'; ctx.lineWidth = 2; ctx.strokeRect(-this.w/2, -this.h/2, this.w, this.h); }
+            ctx.restore();
+        }
+        update() { 
+            if(gameEnv.gameOver || gameEnv.paused) return; 
+            
+            if (this.type === 'bomber') {
+                this.x += this.vx; this.frame++;
+                let dropRate = [60, 45, 25][appState.difficulty - 1] || 45; 
+                if (this.frame % dropRate === 0) {
+                    let diffMult = [0.5, 1, 1.5][appState.difficulty - 1] * (appState.isCoop ? 1.5 : 1);
+                    let dmg = 25 * diffMult; 
+                    entities.bullets.push(new Bullet(this.x, this.y + 20, 0, 5, dmg, '#ff5500', true, null, 'normal', 1, 1));
+                }
+                if (this.dir === 1 && this.x > canvas.width + 50) this.active = false;
+                if (this.dir === -1 && this.x < -50) this.active = false;
+            } else {
+                this.y += this.vy; if (this.y > canvas.height + 50) this.active = false; 
+            }
+        }
+    }
+
+    class Boss {
+        constructor() {
+            this.x = canvas.width/2; this.y = -100; this.w = 160; this.h = 100;
+            this.maxHp = appState.isCoop ? 22500 : 15000; this.hp = this.maxHp;
+            this.active = true; this.timer = 0; this.dead = false; this.phase = 1; 
+            this.tauntText = ""; this.tauntTimer = 0; this.daodunTriggered = false; this.daodunActive = false; this.daodunSpawns = 0; 
+            this.spawning = true; this.isInvincible = false; 
+
+            document.getElementById('boss-hud').style.display = 'block';
+        }
+        draw() {
+            if(this.dead) return;
+            ctx.save(); ctx.translate(this.x, this.y);
+            
+            if (this.isInvincible || this.spawning) {
+                ctx.beginPath(); ctx.arc(0, 0, this.w/1.5, 0, Math.PI*2);
+                ctx.strokeStyle = '#00f3ff'; ctx.lineWidth = 5; ctx.stroke();
+                ctx.fillStyle = 'rgba(0, 243, 255, 0.2)'; ctx.fill();
+            }
+
+            let imgKey = this.phase === 1 ? 'boss_p1' : 'boss_p2'; let glowColor = this.phase === 1 ? '#ff2a2a' : '#ff00ff'; 
+            ctx.shadowBlur = this.phase === 2 ? 30 : 20; ctx.shadowColor = glowColor;
+            
+            if (imgLoaded[imgKey]) { ctx.drawImage(imgs[imgKey], -this.w/2, -this.h/2, this.w, this.h); } 
+            else { ctx.fillStyle = '#111'; ctx.strokeStyle = glowColor; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-this.w/2, -this.h/2); ctx.lineTo(this.w/2, -this.h/2); ctx.lineTo(this.w/4, this.h/2); ctx.lineTo(-this.w/4, this.h/2); ctx.closePath(); ctx.fill(); ctx.stroke(); }
+            
+            if (this.tauntTimer > 0) { ctx.shadowBlur = 5; ctx.shadowColor = '#000'; ctx.fillStyle = '#ff2a2a'; ctx.font = 'bold 22px "Segoe UI"'; ctx.textAlign = 'center'; ctx.fillText(this.tauntText, 0, -this.h/2 - 30); }
+            ctx.restore();
+            document.getElementById('boss-hp-fill').style.width = Math.max(0, (this.hp/this.maxHp)*100) + '%';
+        }
+        
+        update() {
+            if (this.dead || gameEnv.gameOver || gameEnv.paused) return;
+            
+            if (this.spawning) {
+                this.y += 1.5;
+                if (this.y >= 150) this.spawning = false;
+                return;
+            }
+
+            this.timer++;
+            this.x = canvas.width/2 + Math.sin(this.timer * 0.02) * 120;
+            this.y = 150 + Math.sin(this.timer * 0.015) * 50;
+
+            if (this.phase === 1 && this.hp <= this.maxHp * 0.5) { 
+                this.phase = 2; spawnParticles(this.x, this.y, 100, '#ff2a2a'); 
+                this.tauntText = "感受绝望吧！！！"; this.tauntTimer = 100;
+            }
+
+            if (this.hp <= this.maxHp * 0.4 && !this.daodunTriggered) {
+                this.daodunTriggered = true; this.daodunActive = true; this.daodunSpawns = 30; this.isInvincible = true; 
+                bossSound.pause(); stampedeSound.play().catch(e=>{}); 
+                this.tauntText = "刀盾大军，碾碎他们！"; this.tauntTimer = 150;
+            }
+
+            if (this.daodunActive) {
+                if (this.daodunSpawns > 0 && gameEnv.frame % 10 === 0) {
+                    let e = new Enemy(Math.random()*(canvas.width-40)+20, -40, 80);
+                    e.vy = 5 + Math.random() * 3; e.isStampede = true; entities.enemies.push(e); this.daodunSpawns--;
+                }
+                if (this.daodunSpawns <= 0 && !entities.enemies.some(e => e.isStampede)) {
+                    this.daodunActive = false; this.isInvincible = false; stampedeSound.pause(); stampedeSound.currentTime = 0; 
+                    if (!gameEnv.gameOver && !this.dead && !gameEnv.paused) bossSound.play().catch(e=>{}); 
+                }
+            }
+
+            if (this.timer % 150 === 0 && Math.random() > 0.4 && !this.daodunActive) {
+                const tauntsP1 = ["就这点能耐？", "没吃饭吗？", "来给我挠痒痒？"]; const tauntsP2 = ["毁灭吧！", "死！！！", "全都给我化为灰烬！", "颤抖吧！"];
+                this.tauntText = (this.phase === 1 ? tauntsP1 : tauntsP2)[Math.floor(Math.random() * 3)]; this.tauntTimer = 90;
+            }
+            if (this.tauntTimer > 0) this.tauntTimer--;
+
+            let diffMult = [0.5, 1, 1.5][appState.difficulty - 1] * (appState.isCoop ? 1.5 : 1);
+
+            if (this.phase === 1 && this.timer % 70 === 0 && !this.isInvincible) {
+                let target = entities.players.find(p => p.hp > 0);
+                if (target) { let dx = target.x - this.x; let dy = target.y - this.y; let dist = Math.hypot(dx, dy); 
+                    if (dist > 0) { entities.bullets.push(new Bullet(this.x, this.y+this.h/2, (dx/dist)*6, (dy/dist)*6, 20 * diffMult, '#ff2a2a', true, null, 'normal', Math.max(1, Math.floor(3 * diffMult)), 1)); playWeaponSFX('boss_shoot1'); } 
+                }
+            }
+            if (this.phase === 2 && !this.isInvincible) {
+                if (this.timer % 120 === 0) {
+                    let target = entities.players.find(p => p.hp > 0);
+                    if (target) { let dx = target.x - this.x; let dy = target.y - this.y; let dist = Math.hypot(dx, dy); 
+                        if (dist > 0) { entities.bullets.push(new Bullet(this.x, this.y+this.h/2, (dx/dist)*8, (dy/dist)*8, 45 * diffMult, '#ffd700', true, null, 'sword', Math.max(1, Math.floor(10 * diffMult)), 1)); playWeaponSFX('boss_sword'); } 
+                    }
+                }
+                if (this.timer % 150 === 0) {
+                    for(let i=-1; i<=1; i+=2) { entities.bullets.push(new Bullet(this.x + i*50, this.y+this.h/2, i*3, 3, 30 * diffMult, '#ffaa00', true, null, 'homing', Math.max(1, Math.floor(4 * diffMult)), 1)); }
+                }
+                if (this.timer % 40 === 0) {
+                    let target = entities.players.find(p => p.hp > 0);
+                    if (target) { let dx = target.x - this.x; let dy = target.y - this.y; let dist = Math.hypot(dx, dy); 
+                        if (dist > 0) { entities.bullets.push(new Bullet(this.x, this.y+this.h/2, (dx/dist)*5 + (Math.random()-0.5), (dy/dist)*5, 25 * diffMult, '#ff00ff', true, null, 'normal', Math.max(1, Math.floor(6 * diffMult)), 1)); playWeaponSFX('boss_shoot2'); } 
+                    }
+                }
+            }
+
+            if (this.hp <= 0 && !this.dead) { this.dead = true; document.getElementById('boss-hud').style.display = 'none'; spawnParticles(this.x, this.y, 200, '#ffcc00'); triggerGameOver(true); }
+        }
+    }
+
+    class Item { 
+        constructor(x, y) { 
+            this.x = x; this.y = y; this.w=20; this.h=20; this.active = true; this.vy = 2; this.frame = 0;
+            let r = Math.random(); 
+            if (r < 0.08) { this.type = 'star'; this.color = '#ffd700'; }
+            else if(r < 0.28) {this.type='stream'; this.color='#00f3ff';} 
+            else if(r < 0.52) {this.type='spd'; this.color='#00ff66';} 
+            else if(r < 0.76) {this.type='dmg'; this.color='#ff00ea';} 
+            else {this.type='hp'; this.color='#ffffff';} 
+        } 
+        draw() { 
+            this.frame++; ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.frame * 0.05);
+            ctx.shadowBlur = 15; ctx.shadowColor = this.color; ctx.strokeStyle = this.color; ctx.lineWidth = 2;
+
+            if (this.type === 'star') {
+                ctx.fillStyle = this.color; ctx.beginPath();
+                for (let i = 0; i < 5; i++) { ctx.lineTo(Math.cos((18 + i * 72) * Math.PI / 180) * 15, -Math.sin((18 + i * 72) * Math.PI / 180) * 15); ctx.lineTo(Math.cos((54 + i * 72) * Math.PI / 180) * 6, -Math.sin((54 + i * 72) * Math.PI / 180) * 6); }
+                ctx.closePath(); ctx.fill(); ctx.stroke();
+            } else if (this.type === 'hp') {
+                ctx.beginPath(); ctx.arc(0, 0, 12, 0, Math.PI*2); ctx.stroke();
+                ctx.fillStyle = '#ffffff'; ctx.fillRect(-8, -2, 16, 4); ctx.fillRect(-2, -8, 4, 16);
+            } else if (this.type === 'dmg') {
+                ctx.beginPath(); ctx.moveTo(0, -12); ctx.lineTo(12, 0); ctx.lineTo(0, 12); ctx.lineTo(-12, 0); ctx.closePath(); ctx.stroke(); 
+                ctx.fillStyle = 'rgba(255,0,234,0.5)'; ctx.fill(); ctx.fillRect(-3, -3, 6, 6);
+            } else if (this.type === 'spd') {
+                ctx.beginPath(); for(let i=0; i<6; i++) { ctx.lineTo(Math.cos(i * Math.PI/3) * 12, Math.sin(i * Math.PI/3) * 12); } ctx.closePath(); ctx.stroke();
+                ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(0, 0, 4, 0, Math.PI*2); ctx.fill();
+            } else if (this.type === 'stream') {
+                ctx.fillStyle = this.color;
+                ctx.beginPath(); ctx.moveTo(0, -10); ctx.lineTo(10, 0); ctx.lineTo(0, 5); ctx.lineTo(-10, 0); ctx.closePath(); ctx.fill();
+                ctx.beginPath(); ctx.moveTo(0, -2); ctx.lineTo(10, 8); ctx.lineTo(0, 13); ctx.lineTo(-10, 8); ctx.closePath(); ctx.fill();
+            }
+            ctx.restore();
+        } 
+        update() { if(gameEnv.gameOver || gameEnv.paused) return; this.y += this.vy; if(this.y > canvas.height) this.active=false; } 
+    }
+    class Particle { constructor(x,y,c){this.x=x;this.y=y;this.c=c;this.a=1;let ang=Math.random()*Math.PI*2;let s=Math.random()*5;this.vx=Math.cos(ang)*s;this.vy=Math.sin(ang)*s;this.act=true;} draw(){ctx.globalAlpha=this.a;ctx.fillStyle=this.c;ctx.beginPath();ctx.arc(this.x,this.y,2,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;} update(){this.x+=this.vx;this.y+=this.vy;this.vx*=0.95;this.vy*=0.95;this.a-=0.02;if(this.a<=0)this.act=false;} }
+
+    function spawnParticles(x, y, count, color) { for(let i=0; i<count; i++) entities.particles.push(new Particle(x, y, color)); }
+    function checkCollision(obj1, obj2) { let w1 = obj1.w !== undefined ? obj1.w : obj1.r*2; let h1 = obj1.h !== undefined ? obj1.h : obj1.r*2; let w2 = obj2.w !== undefined ? obj2.w : obj2.r*2; let h2 = obj2.h !== undefined ? obj2.h : obj2.r*2; return Math.abs(obj1.x - obj2.x) < (w1+w2)/2 && Math.abs(obj1.y - obj2.y) < (h1+h2)/2; }
+    
+    function dealDamage(target, dmgAmount, attackerPlayer) { 
+        if(target.hp <= 0) return; 
+        if (target.spawning || target.isInvincible) { spawnParticles(target.x, target.y + target.h/2, 2, '#aaaaaa'); return; }
+
+        target.tookDamage = true; let actualDmg = Math.min(target.hp, dmgAmount); target.hp -= actualDmg; 
+        
+        if (target instanceof Enemy && !entities.boss && hitSound.paused) { hitSound.play().catch(e => {}); }
+        
+        let diffMult = [1, 2, 3][appState.difficulty - 1] || 1;
+
+        if (attackerPlayer) { 
+            attackerPlayer.damageDealt += actualDmg; attackerPlayer.energy = Math.min(100, attackerPlayer.energy + actualDmg/10); 
+            if (target instanceof Boss) {
+                let pts = 100 * diffMult;
+                attackerPlayer.score += pts;
+                let px = target.x + (Math.random() - 0.5) * target.w * 0.8;
+                let py = target.y + (Math.random() - 0.5) * target.h * 0.8;
+                floatTexts.push({x: px, y: py, txt: `+${pts}`, c: '#ffd700', a: 1.0});
+            }
+        } 
+        
+        if (target.hp <= 0) { 
+            target.active = false; spawnParticles(target.x, target.y, target instanceof Boss ? 100 : 30, '#ff2a2a'); 
+            
+            if (!(target instanceof Boss) && attackerPlayer) {
+                let pts = 50 * diffMult; 
+                attackerPlayer.score += pts;
+                floatTexts.push({x: target.x + (Math.random()-0.5)*40, y: target.y, txt: `+${pts}`, c: '#00ff66', a: 1.5});
+            }
+
+            if (!(target instanceof Boss) && Math.random() < 0.25) entities.items.push(new Item(target.x, target.y)); 
+            
+            if (!entities.boss && (entities.players[0].damageDealt + (entities.players[1]?.damageDealt||0)) > 5000) {
+                entities.enemies.forEach(e => spawnParticles(e.x, e.y, 20, '#ff2a2a')); entities.enemies = []; 
+                entities.boss = new Boss();
+                hitSound.pause(); hitSound.currentTime = 0; bossSound.play().catch(e => {}); 
+            }
+        } 
+    }
+    
+    function useBomb(ownerId) { 
+        ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.fillRect(0,0,canvas.width, canvas.height); 
+        let owner = entities.players.find(p=>p.id===ownerId); 
+        entities.enemies.forEach(e => dealDamage(e, e.hp, owner)); entities.bullets = entities.bullets.filter(b => !b.isEnemy); 
+        if (entities.boss && !entities.boss.dead && !entities.boss.spawning) dealDamage(entities.boss, 1500, owner);
+        playWeaponSFX('nuke_boom');
+    }
+    
+    function startGame() { 
+        if (audioCtx.state === 'suspended') audioCtx.resume(); 
+        gameEnv.running = true; gameEnv.gameOver = false; gameEnv.paused = false; gameEnv.frame = 0; 
+        floatTexts = []; 
+        let wrapper = document.getElementById('game-wrapper');
+        if (appState.difficulty === 1) wrapper.style.backgroundImage = "url('卫星背景.webp')";
+        else if (appState.difficulty === 2) wrapper.style.backgroundImage = "url('飞机大战背景.jpeg')";
+        else if (appState.difficulty === 3) wrapper.style.backgroundImage = "url('恒星级.jpeg')";
+        wrapper.classList.remove('menu-glow'); wrapper.classList.add('battle-mode');
+
+        entities = { players: [], bullets: [], enemies: [], particles: [], items: [], boss: null }; 
+        entities.players.push(new Player(1, false, appState.p1Plane)); 
+        document.getElementById('p1-name').innerText = appState.playerName; document.getElementById('p1-hud').classList.add('hud-active'); 
+        
+        document.getElementById('controls-hud').style.display = 'block';
+        
+        if (appState.isCoop) { 
+            entities.players.push(new Player(2, true, appState.p2Plane)); 
+            document.getElementById('p2-name').innerText = 'P2'; 
+            document.getElementById('p2-hud').classList.add('hud-active'); 
+            document.getElementById('p2-controls-text').style.display = 'block';
+        } else { 
+            document.getElementById('p2-hud').classList.remove('hud-active'); 
+            document.getElementById('p2-controls-text').style.display = 'none';
+        } 
+        document.getElementById('boss-hud').style.display = 'none'; 
+        
+        requestAnimationFrame(loop); 
+    }
+
+    function pauseGame() {
+        if (!gameEnv.running || gameEnv.gameOver || gameEnv.paused) return;
+        gameEnv.paused = true;
+        document.getElementById('screen-pause').classList.remove('hidden');
+        bossSound.pause(); stampedeSound.pause(); hitSound.pause();
+    }
+
+    function resumeGame() {
+        gameEnv.paused = false;
+        document.getElementById('screen-pause').classList.add('hidden');
+        if (entities.boss && !entities.boss.dead) {
+            if (entities.boss.daodunActive) stampedeSound.play().catch(e=>{});
+            else bossSound.play().catch(e=>{});
+        }
+        requestAnimationFrame(loop); 
+    }
+
+    function abortGameConfirm() { gameEnv.paused = false; document.getElementById('screen-pause').classList.add('hidden'); exitToMenu(); }
+    function stopBossBGM() { bossSound.pause(); bossSound.currentTime = 0; stampedeSound.pause(); stampedeSound.currentTime = 0; }
+
+    function triggerGameOver(isWin) {
+        if (gameEnv.gameOver) return;
+        gameEnv.gameOver = true;
+        document.getElementById('boss-hud').style.display = 'none'; 
+        document.getElementById('controls-hud').style.display = 'none';
+        
+        if (!isWin && entities.boss && !entities.boss.dead) { entities.boss.tauntText = "不堪一击的废物！"; entities.boss.tauntTimer = 150; }
+
+        let ft = document.getElementById('floating-text');
+        ft.innerHTML = isWin ? "MISSION COMPLETE<br><span style='font-size:20px'>(讨伐成功)</span>" : "GAME OVER";
+        ft.style.color = isWin ? "var(--blue)" : "var(--red)"; ft.style.textShadow = isWin ? "0 0 20px var(--blue)" : "0 0 20px red"; ft.style.opacity = 1;
+
+        stopBossBGM();
+        setTimeout(() => { ft.style.opacity = 0; showEndScreen(isWin); }, 2500);
+    }
+
+    function showEndScreen(isWin) {
+        gameEnv.running = false; 
+        let totalDmg = entities.players.reduce((sum, p) => sum + p.damageDealt, 0);
+        let totalScore = entities.players.reduce((sum, p) => sum + p.score, 0); 
+        
+        document.getElementById('end-title').innerHTML = isWin ? "MISSION COMPLETE<br><span style='font-size:20px'>(讨伐成功)</span>" : "GAME OVER";
+        document.getElementById('end-title').style.color = isWin ? "var(--blue)" : "var(--red)";
+        document.getElementById('end-dmg').innerText = Math.floor(totalDmg);
+        document.getElementById('end-score').innerText = Math.floor(totalScore); 
+        switchScreen('screen-end');
+    }
+
+    function exitToMenu() {
+        gameEnv.running = false; 
+        document.getElementById('controls-hud').style.display = 'none';
+        document.getElementById('p1-hud').classList.remove('hud-active'); document.getElementById('p2-hud').classList.remove('hud-active'); document.getElementById('boss-hud').style.display = 'none'; 
+        
+        stopBossBGM(); 
+        let totalScore = entities.players.reduce((sum, p) => sum + p.score, 0); if (totalScore > 0) { saveLB(appState.isCoop ? 'coop' : 'solo', [appState.playerName], totalScore); } 
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let wrapper = document.getElementById('game-wrapper'); wrapper.style.backgroundImage = "url('蓝狐动画标志.jpg')"; wrapper.classList.remove('battle-mode'); wrapper.classList.add('menu-glow'); 
+        switchScreen('screen-menu'); 
+    }
+
+    function loop() {
+        if (!gameEnv.running || gameEnv.paused) return; 
+        ctx.clearRect(0,0,canvas.width, canvas.height);
+        gameEnv.frame++;
+        
+        let coopSpawnMult = appState.isCoop ? 0.6 : 1; 
+        let spawnModulo = Math.floor((60 - (appState.difficulty - 2) * 15) * coopSpawnMult); 
+        if (!entities.boss && gameEnv.frame % spawnModulo === 0 && !gameEnv.gameOver) entities.enemies.push(new Enemy(Math.random()*(canvas.width-40)+20, -40, 150 * (appState.isCoop?1.5:1)));
+        
+        if (gameEnv.frame % 350 === 0 && !gameEnv.gameOver) {
+            entities.enemies.push(new Enemy(0, 80 + Math.random() * 150, 150 * (appState.isCoop?1.5:1), 'bomber'));
+        }
+
+        ['items', 'particles', 'bullets', 'enemies'].forEach(group => { entities[group].forEach(e => { e.update(); e.draw(); }); entities[group] = entities[group].filter(e => e.active || e.act); });
+        
+        if (entities.boss && !entities.boss.dead) { entities.boss.update(); entities.boss.draw(); }
+        entities.players.forEach(p => { p.update(); p.draw(); });
+        
+        entities.bullets.filter(b => !b.isEnemy && !b.isNuke && b.type !== 'rainbow').forEach(pb => {
+            entities.bullets.filter(eb => eb.isEnemy).forEach(eb => {
+                if (pb.active && eb.active && checkCollision(pb, eb)) { eb.bulletHp -= pb.bulletDmg; pb.active = false; spawnParticles(pb.x, pb.y, 3, pb.color); if (eb.bulletHp <= 0) { eb.active = false; spawnParticles(eb.x, eb.y, 8, eb.color); } }
+            });
+            entities.enemies.forEach(e => {
+                if (pb.active && e.active && checkCollision(pb, e)) { dealDamage(e, pb.dmg, pb.owner); pb.active = false; spawnParticles(pb.x, pb.y, 3, pb.color); }
+            });
+            if (pb.active && entities.boss && !entities.boss.dead && !entities.boss.spawning && checkCollision(pb, entities.boss)) { dealDamage(entities.boss, pb.dmg, pb.owner); pb.active = false; spawnParticles(pb.x, pb.y, 5, '#fff'); }
+        });
+
+        entities.players.forEach(p => { 
+            if (p.hp <= 0) return; 
+            let hit = false; let diffDmgMult = [0.7, 1, 1.5][appState.difficulty - 1] * (appState.isCoop ? 1.5 : 1); 
+            
+            entities.enemies.forEach(e => { if (e.active && checkCollision(p, e)) { e.active = false; dealDamage(e, e.hp, null); if (p.invincibleTimer <= 0) { p.hp -= 20 * diffDmgMult; hit = true; } } }); 
+            entities.bullets.filter(b => b.isEnemy).forEach(b => { if (b.active && checkCollision(p, b)) { b.active = false; if (p.invincibleTimer <= 0) { p.hp -= b.dmg; hit = true; } } }); 
+            
+            if (entities.boss && !entities.boss.dead && !entities.boss.spawning && checkCollision(p, entities.boss)) { if (p.invincibleTimer <= 0) { p.hp -= 20 * diffDmgMult; hit = true; } } 
+            
+            if (hit && p.invincibleTimer <= 0) { spawnParticles(p.x, p.y, 20, '#ff2a2a'); p.invincibleTimer = 45; }
+            if (p.hp <= 0 && !p.deadFlag) { p.hp = 0; p.deadFlag = true; p.updateUI(); }
+
+            entities.items.forEach(item => { 
+                if (item.active && checkCollision(p, item)) { 
+                    item.active = false; 
+                    let msg = "";
+                    if(item.type === 'stream'){ p.streams = Math.min(3, p.streams + 1); msg = "弹道升级!"; }
+                    if(item.type === 'dmg'){ p.damageBuff += 5; msg = "伤害提升!"; }
+                    if(item.type === 'spd'){ p.fireRateBuff = Math.min(p.cfg.fireRate-2, p.fireRateBuff + 2); msg = "射速提升!"; }
+                    if(item.type === 'hp'){ p.hp = Math.min(p.maxHp, p.hp + 30); msg = "生命恢复+30"; }
+                    if(item.type === 'star') { p.maxHp = Math.min(p.absoluteMaxHp, p.maxHp + 20); p.hp = Math.min(p.maxHp, p.hp + 20); msg = "血量上限突破!"; }
+                    spawnParticles(p.x, p.y, 15, item.color); 
+                    floatTexts.push({x: p.x, y: p.y, txt: msg, c: item.color, a: 1.5}); 
+                } 
+            }); 
+        });
+        
+        floatTexts.forEach(f => {
+            ctx.fillStyle = f.c; ctx.globalAlpha = Math.max(0, Math.min(1, f.a));
+            ctx.font = "bold 16px 'Segoe UI'"; ctx.textAlign = 'center'; ctx.shadowBlur = 5; ctx.shadowColor = '#000';
+            ctx.fillText(f.txt, f.x, f.y); f.y -= 1.5; f.a -= 0.02;
+        });
+        ctx.globalAlpha = 1; ctx.shadowBlur = 0; floatTexts = floatTexts.filter(f => f.a > 0);
+
+        if (!gameEnv.gameOver && entities.players.length > 0 && entities.players.every(p => p.hp <= 0)) { triggerGameOver(false); }
+        requestAnimationFrame(loop);
+    }
+</script>
+</body>
+</html>
