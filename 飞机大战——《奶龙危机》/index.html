@@ -17,7 +17,8 @@
         #game-wrapper {
             position: relative; width: 600px; height: 800px;
             border: 2px solid transparent;
-            background-image: url('蓝狐动画标志.jpg');
+            /* 修改为英文路径 */
+            background-image: url('bg-menu.jpg');
             background-size: cover; background-position: center;
             overflow: hidden; transition: background-image 0.5s ease-in-out; 
         }
@@ -259,9 +260,10 @@
         }
     }
 
-    const hitSound = new Audio('刀盾音频.mp3'); hitSound.volume = 0.3; 
-    const bossSound = new Audio('我是奶龙.mp3'); bossSound.loop = true; bossSound.volume = 0.5; 
-    const stampedeSound = new Audio('刀盾音频.mp3'); stampedeSound.loop = true; stampedeSound.volume = 0.4;
+    // 修改为英文音频路径
+    const hitSound = new Audio('sfx-hit.mp3'); hitSound.volume = 0.3; 
+    const bossSound = new Audio('sfx-boss.mp3'); bossSound.loop = true; bossSound.volume = 0.5; 
+    const stampedeSound = new Audio('sfx-hit.mp3'); stampedeSound.loop = true; stampedeSound.volume = 0.4;
 
     const imgs = { red: new Image(), blue: new Image(), gold: new Image(), minion_dog: new Image(), boss_p1: new Image(), boss_p2: new Image() };
     const imgLoaded = { red: false, blue: false, gold: false, minion_dog: false, boss_p1: false, boss_p2: false };
@@ -270,11 +272,14 @@
         imgs[key].src = src; imgs[key].onload = () => imgLoaded[key] = true;
         imgs[key].onerror = () => { console.warn(`图片 ${src} 加载失败，将使用Fallback处理。`); imgLoaded[key] = false; };
     }
-    setupImage('red', '火无极.png'); setupImage('blue', '沧海.png'); setupImage('gold', '光影驹.png');
-    setupImage('minion_dog', '刀盾.jpg'); setupImage('boss_p1', '糖丸奶龙1.png'); 
     
-    // 【修复名称确保读取】
-    setupImage('boss_p2', '暴躁大奶龙1.png'); 
+    // 修改为英文图片路径
+    setupImage('red', 'plane-red.png'); 
+    setupImage('blue', 'plane-blue.png'); 
+    setupImage('gold', 'plane-gold.png');
+    setupImage('minion_dog', 'minion.jpg'); 
+    setupImage('boss_p1', 'boss-p1.png'); 
+    setupImage('boss_p2', 'boss-p2.png'); 
 
     const PlaneConfig = {
         red: { name: '火无极', color: '#ff2a2a', spd: 8, dmg: 25, fireRate: 6, bulletType: 'rapid', ultType: 'homing', bulletDmg: 1 },
@@ -698,9 +703,12 @@
         gameEnv.running = true; gameEnv.gameOver = false; gameEnv.paused = false; gameEnv.frame = 0; 
         floatTexts = []; 
         let wrapper = document.getElementById('game-wrapper');
-        if (appState.difficulty === 1) wrapper.style.backgroundImage = "url('卫星背景.webp')";
-        else if (appState.difficulty === 2) wrapper.style.backgroundImage = "url('飞机大战背景.jpeg')";
-        else if (appState.difficulty === 3) wrapper.style.backgroundImage = "url('恒星级.jpeg')";
+        
+        /* 修改为英文路径 */
+        if (appState.difficulty === 1) wrapper.style.backgroundImage = "url('bg-easy.webp')";
+        else if (appState.difficulty === 2) wrapper.style.backgroundImage = "url('bg-normal.jpeg')";
+        else if (appState.difficulty === 3) wrapper.style.backgroundImage = "url('bg-hard.jpeg')";
+        
         wrapper.classList.remove('menu-glow'); wrapper.classList.add('battle-mode');
 
         entities = { players: [], bullets: [], enemies: [], particles: [], items: [], boss: null }; 
@@ -779,7 +787,11 @@
         stopBossBGM(); 
         let totalScore = entities.players.reduce((sum, p) => sum + p.score, 0); if (totalScore > 0) { saveLB(appState.isCoop ? 'coop' : 'solo', [appState.playerName], totalScore); } 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        let wrapper = document.getElementById('game-wrapper'); wrapper.style.backgroundImage = "url('蓝狐动画标志.jpg')"; wrapper.classList.remove('battle-mode'); wrapper.classList.add('menu-glow'); 
+        
+        let wrapper = document.getElementById('game-wrapper'); 
+        /* 修改为英文路径 */
+        wrapper.style.backgroundImage = "url('bg-menu.jpg')"; 
+        wrapper.classList.remove('battle-mode'); wrapper.classList.add('menu-glow'); 
         switchScreen('screen-menu'); 
     }
 
