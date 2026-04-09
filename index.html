@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <title>白糖 | 个人主页</title>
+    <meta name="description" content="白糖的个人主页 - 机器人工程专业 | AI大模型应用">
+    
+    <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <style>
+        /* ==========================================================================
+           1. 全局变量与背景模式控制
+           ========================================================================== */
+        :root {
+            --bg-base: transparent;
+            --surface: rgba(15, 23, 42, 0.4); 
+            --surface-solid: #0f172a;
+            --text-strong: #f8fafc; 
+            --text-main: #e2e8f0;   
+            --text-muted: #94a3b8;  
+            --primary: #60a5fa;      
+            --primary-hover: #3b82f6;
+            --secondary: #0ea5e9;
+            --border: rgba(255, 255, 255, 0.15); 
+            --radius-md: 16px;
+            --radius-full: 9999px;
+            --shadow-sm: 0 4px 10px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 10px 20px rgba(0, 0, 0, 0.5);
+            --transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            --nav-height: 64px;
+
+            --overlay-alpha: 0; 
+            --card-opacity: 1;  
+            
+            --neon-cyan: #00f3ff;
+            --neon-pink: #ff00ff;
+        }
+
+        [data-opa-state="focus-content"] {
+            --overlay-alpha: 0.6; 
+        }
+        [data-theme="white"] { display: none !important; }
+
+        /* ==========================================================================
+           2. 背景层 (原图直出)
+           ========================================================================== */
+        .video-bg { 
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2; pointer-events: none; 
+            background-color: #0f172a; 
+            background-image: url('10002.jpg'); 
+            background-size: cover; background-position: center; background-repeat: no-repeat;
+        }
+        .video-overlay { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; 
+            background: rgba(15, 23, 42, var(--overlay-alpha)); 
+            transition: background var(--transition), backdrop-filter var(--transition); 
+            pointer-events: none; 
+        }
+        body.content-mode .video-overlay { 
+            backdrop-filter: blur(8px); 
+            -webkit-backdrop-filter: blur(8px); 
+            background: rgba(15, 23, 42, 0.45); 
+        }
+
+        /* ==========================================================================
+           3. 基础排版
+           ========================================================================== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background-color: var(--bg-base); color: var(--text-main); line-height: 1.6; -webkit-tap-highlight-color: transparent; overflow-x: hidden; min-height: 100vh; }
+        button { cursor: pointer; border: none; background: none; font-family: inherit; outline: none; }
+        .container { width: 100%; max-width: 860px; margin: 0 auto; padding: 0 1.25rem; }
+        strong { color: var(--primary); font-weight: 900; } 
+
+        /* ==========================================================================
+           4. 导航栏
+           ========================================================================== */
+        nav { position: fixed; top: 0; left: 0; width: 100%; height: var(--nav-height); z-index: 9999; display: flex; align-items: center; transition: 0.3s; pointer-events: none; }
+        body.content-mode nav { background: var(--surface); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+        .nav-inner { display: flex; justify-content: space-between; align-items: center; width: 100%; pointer-events: auto; max-width: 1200px; margin: 0 auto; padding: 0 1.25rem;}
+        
+        .nav-left-group { display: flex; align-items: center; gap: 1.5rem; }
+        .nav-brand { font-weight: 800; font-size: 1.25rem; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.5); transition: 0.3s;}
+        
+        .back-btn { display: none; align-items: center; gap: 0.4rem; font-weight: 600; font-size: 0.9rem; color: var(--text-strong); background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 20px; transition: 0.3s; }
+        .back-btn:hover { background: rgba(255,255,255,0.25); transform: translateY(-2px); }
+        body.content-mode .back-btn { display: flex; animation: fadeIn 0.4s ease; }
+
+        .nav-actions { display: flex; gap: 0.6rem; position: relative; z-index: 10000; align-items: center;}
+        .icon-btn { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); transition: 0.3s; text-decoration: none; font-size: 1.1rem;}
+        .icon-btn:hover { background: var(--primary); transform: translateY(-2px); }
+        .icon-btn:active { transform: scale(0.9); }
+        
+        .wechat-btn { background: #07c160; box-shadow: 0 4px 10px rgba(7, 193, 96, 0.3); color: #fff !important; }
+        .wechat-btn:hover { background: #06ad56; }
+        .subscribe-btn { background: #f59e0b; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3); color: #fff !important; }
+        .subscribe-btn:hover { background: #d97706; }
+
+        /* ==========================================================================
+           5. 首页主区与侧边栏
+           ========================================================================== */
+        #view-home { display: flex; flex-direction: column; align-items: center; padding-bottom: 0; position: relative; z-index: 10; pointer-events: auto; }
+        
+        .home-hero { position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: #fff; width: 100%; height: 100vh; padding-top: var(--nav-height); margin-bottom: 2rem; }
+        .scroll-down-arrow { position: absolute; bottom: 3rem; color: #fff; font-size: 2rem; animation: bounce 2s infinite; cursor: pointer; opacity: 0.8; transition: 0.3s; z-index: 20; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+        .scroll-down-arrow:hover { opacity: 1; color: var(--primary); }
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-15px); } 60% { transform: translateY(-7px); } }
+
+        .home-title { font-size: 2.8rem; font-weight: 900; letter-spacing: 2px; text-shadow: 0 4px 12px rgba(0,0,0,0.8); margin-bottom: 0.5rem; }
+        .home-subtitle { font-size: 1.15rem; font-weight: 500; text-shadow: 0 2px 6px rgba(0,0,0,0.8); opacity: 0.95; }
+        
+        /* 问候语样式 - 方正舒体 */
+        .home-greeting { 
+            font-family: "方正舒体", "FZShuTi", "STXingkai", cursive, serif;
+            font-size: 1.6rem; 
+            font-weight: 600; 
+            color: #fff; 
+            text-shadow: 0 2px 6px rgba(0,0,0,0.8); 
+            margin-top: 1rem; 
+            animation: floatUp 2s ease-in-out infinite alternate; 
+            opacity: 0.95; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 36px; 
+            transition: opacity 0.3s ease; 
+        }
+        .home-greeting.fade-out { opacity: 0; }
+        .osmanthus-icon { width: 28px; height: 28px; margin-right: 12px; animation: spin 4s linear infinite; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes floatUp { from { transform: translateY(0); } to { transform: translateY(-4px); } }
+
+        .home-layout { display: flex; flex-direction: column; gap: 1.5rem; width: 100%; max-width: 1100px; margin: 0 auto 4rem auto; padding: 0 1.25rem; }
+        .home-article-list { display: flex; flex-direction: column; gap: 1.5rem; flex: 1; }
+        
+        .home-sidebar { display: flex; flex-direction: column; gap: 1.5rem; width: 100%; }
+        .sidebar-card { background: var(--surface); border-radius: var(--radius-md); padding: 1.5rem; border: 1px solid var(--border); box-shadow: var(--shadow-sm); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); opacity: var(--card-opacity); transition: var(--transition); }
+        .sidebar-card h3 { color: var(--primary); font-size: 1.2rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;}
+        .stat-box { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 1rem; margin-bottom: 1rem; text-align: center; border: 1px solid rgba(255,255,255,0.05);}
+        .stat-num { display: block; font-size: 1.8rem; font-weight: 900; color: #fff; margin-bottom: 0.2rem; font-family: monospace;}
+        .stat-label { font-size: 0.85rem; color: var(--text-muted); }
+
+        .profile-card { display: flex; flex-direction: column; align-items: center; text-align: center; }
+        .profile-avatar-wrap { width: 100px; height: 100px; margin-bottom: 1rem; border-radius: 50%; overflow: hidden; border: 3px solid rgba(255,255,255,0.8); box-shadow: var(--shadow-sm); cursor: pointer; transition: 0.5s; background: rgba(255,255,255,0.1); }
+        .profile-avatar-wrap:hover { transform: rotate(360deg); }
+        .profile-avatar { width: 100%; height: 100%; object-fit: cover; }
+        .profile-name { font-size: 1.4rem; font-weight: 900; color: var(--text-strong); margin-bottom: 0.2rem; }
+        .profile-desc { font-size: 0.9rem; color: var(--text-muted); font-weight: 500; }
+
+        .article-card { display: flex; flex-direction: column; background: var(--surface); border-radius: var(--radius-md); border: 1px solid var(--border); overflow: hidden; opacity: var(--card-opacity); transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: var(--shadow-sm); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); cursor: pointer; }
+        .article-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-md); background: rgba(15, 23, 42, 0.55); opacity: 1; }
+        .article-card:hover .article-title { color: var(--primary); }
+        .article-cover { width: 100%; height: 200px; overflow: hidden; position: relative; background: #0f172a; } 
+        .article-cover img { width: 100%; height: 100%; object-fit: cover; transition: 0.6s ease; }
+        .article-card:hover .article-cover img { transform: scale(1.08); }
+        .article-info { padding: 1.5rem; display: flex; flex-direction: column; justify-content: center; flex: 1; }
+        .article-meta { font-size: 0.8rem; color: var(--secondary); margin-bottom: 0.5rem; font-weight: 600; display: flex; gap: 10px; align-items: center;}
+        .article-title { font-size: 1.25rem; font-weight: 800; color: var(--text-strong); margin-bottom: 0.5rem; line-height: 1.4; transition: 0.3s;}
+        .article-desc { font-size: 0.9rem; color: var(--text-main); line-height: 1.6; }
+
+        @media (min-width: 768px) {
+            .article-card { flex-direction: row; height: 240px; }
+            .article-cover { width: 45%; height: 100%; clip-path: polygon(0 0, 100% 0, 92% 100%, 0 100%); transition: clip-path 0.5s ease, width 0.5s ease; }
+            .article-info { width: 55%; padding: 2.5rem; }
+            .article-card:nth-child(even) { flex-direction: row-reverse; }
+            .article-card:nth-child(even) .article-cover { clip-path: polygon(8% 0, 100% 0, 100% 100%, 15% 100%); }
+            .article-card:hover .article-cover { width: 50%; clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+            .article-card:nth-child(even):hover .article-cover { width: 50%; clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+        }
+
+        @media (min-width: 900px) {
+            .home-layout { flex-direction: row; align-items: flex-start; }
+            .home-article-list { width: 70%; }
+            .home-sidebar { width: 30%; position: sticky; top: calc(var(--nav-height) + 1.5rem); }
+        }
+
+        /* ==========================================================================
+           6. 首页底部个人专属签名栏 (Footer)
+           ========================================================================== */
+        .home-footer {
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto 2rem auto;
+            padding: 2rem 1.25rem;
+            text-align: center;
+            border-top: 1px dashed var(--border);
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 0.85rem;
+        }
+        .home-footer .quote {
+            color: var(--text-main);
+            font-style: italic;
+            margin: 8px 0;
+            font-size: 0.95rem;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+        }
+        .footer-badges {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 5px;
+        }
+        .badge-group {
+            display: inline-flex;
+            border-radius: 4px;
+            overflow: hidden;
+            font-size: 0.75rem;
+            color: #fff;
+            font-family: -apple-system, sans-serif;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .badge-left { background: #374151; padding: 2px 6px; }
+        .badge-right { padding: 2px 6px; text-shadow: none; }
+
+        /* ==========================================================================
+           7. 内容页与组件
+           ========================================================================== */
+        .view { display: none; opacity: 0; transform: translateY(15px); transition: 0.4s; position: relative; z-index: 10; pointer-events: auto; }
+        .view.active { display: block; opacity: 1; transform: translateY(0); }
+        
+        .content-wrap { padding-top: calc(var(--nav-height) + 6cm); margin-top: -43cm; padding-bottom: 4rem; }
+        
+        .section-title { font-size: 1.3rem; font-weight: 800; color: var(--text-strong); margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem; }
+        .section-title::after { content: ""; flex: 1; height: 1px; background: var(--border); margin-left: 0.5rem; }
+        .card { background: var(--surface); border-radius: var(--radius-md); padding: 1.5rem; border: 1px solid var(--border); box-shadow: var(--shadow-sm); margin-bottom: 1.25rem; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); opacity: var(--card-opacity); transition: opacity var(--transition); }
+
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.8rem 1.25rem; border-radius: var(--radius-full); font-weight: 600; font-size: 0.95rem; transition: var(--transition); cursor: pointer; flex: 1; min-width: 140px; text-decoration: none;}
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #fff; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); border: none;}
+        .btn-outline { background: var(--surface-solid); color: var(--text-strong); border: 1px solid var(--border); }
+        .badge { background-color: rgba(96, 165, 250, 0.15); color: var(--primary); padding: 0.35rem 0.8rem; border-radius: var(--radius-full); font-size: 0.85rem; font-weight: 600; border: 1px solid rgba(96, 165, 250, 0.3); display: inline-block; margin: 0 0.4rem 0.6rem 0; }
+
+        .lightbox { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 100000; display: none; align-items: center; justify-content: center; opacity: 0; transition: 0.3s ease; flex-direction: column; pointer-events: none; }
+        .lightbox.show { display: flex; opacity: 1; pointer-events: auto; }
+        .lightbox img { max-width: 90vw; max-height: 85vh; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transform: scale(0.9); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: zoom-out;}
+        .lightbox.show img { transform: scale(1); }
+
+        .modal-card { background: var(--surface); padding: 2rem; border-radius: 16px; border: 1px solid var(--border); text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.5); backdrop-filter: blur(20px); transform: scale(0.9); transition: 0.3s; max-width: 320px; width: 90vw;}
+        .lightbox.show .modal-card { transform: scale(1); }
+        .modal-card p { font-size: 1.15rem; font-weight: 800; color: #fff; margin-bottom: 1.5rem; line-height: 1.5;}
+
+        .comment-input-area { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem; }
+        .comment-input-area textarea { width: 100%; height: 100px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; color: #fff; font-family: inherit; resize: none; outline: none; transition: 0.3s; }
+        .comment-input-area textarea:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(59,130,246,0.1); }
+        .comment-list { display: flex; flex-direction: column; gap: 1rem; }
+        .comment-item { background: rgba(255,255,255,0.05); border-radius: 8px; padding: 1rem; border: 1px solid rgba(255,255,255,0.05); }
+        .comment-time { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+        .comment-text { font-size: 0.95rem; color: var(--text-main); white-space: pre-wrap;}
+
+        /* Tab / Timeline 履历内容样式 */
+        .tab-panel { display: none; animation: fadeIn 0.4s ease; }
+        .tab-panel.active { display: block; }
+        .timeline { padding-left: 0.5rem; }
+        .tl-item { position: relative; padding-left: 1.5rem; padding-bottom: 1.5rem; border-left: 2px solid var(--border); }
+        .tl-item:last-child { border-left-color: transparent; padding-bottom: 0; }
+        .tl-dot { position: absolute; left: -7px; top: 0; width: 12px; height: 12px; border-radius: 50%; background: var(--primary); border: 2px solid var(--surface-solid); }
+        .tl-header { margin-bottom: 0.5rem; }
+        .tl-title { font-size: 1.1rem; font-weight: 800; color: var(--text-strong); }
+        .tl-meta { font-size: 0.85rem; font-weight: 600; color: var(--secondary); margin-top: 0.2rem; display: flex; flex-wrap: wrap; justify-content: space-between; }
+        .tl-body ul { padding-left: 1.2rem; list-style-type: disc; color: var(--text-main); font-size: 0.95rem; margin-top: 0.5rem; line-height: 1.8;}
+
+        .school-intro-text { font-size: 1rem; color: var(--text-main); line-height: 1.8; margin-bottom: 1rem; text-indent: 2em; }
+        .school-intro-title { color: var(--secondary); font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 0.5rem; font-weight: bold;}
+
+        .fab { position: fixed; bottom: 2rem; right: 1.5rem; width: 48px; height: 48px; border-radius: 50%; background: var(--surface-solid); color: var(--text-main); display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md); border: 1px solid var(--border); z-index: 999; transition: var(--transition); opacity: 0; pointer-events: none; transform: translateY(20px); cursor: pointer; }
+        .fab.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ==========================================================================
+           8. 滚动显现动画 (Scroll Reveal) - 从中间展开
+           ========================================================================== */
+        .scroll-reveal {
+            opacity: 0 !important;
+            transform: scale(0.7) translateY(30px) !important;
+            transform-origin: center bottom !important;
+            pointer-events: none; 
+            transition: opacity 0s, transform 0s !important;
+        }
+        
+        .scroll-reveal.visible {
+            opacity: 1 !important; 
+            transform: scale(1) translateY(0) !important;
+            transition: opacity 0.8s ease-out, transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.15) !important;
+            pointer-events: auto;
+        }
+
+        /* ==========================================================================
+           9. 赛博时刻独立视图 (精简发光线框节点 & Canvas 全屏无死角扰动网格)
+           ========================================================================== */
+        #view-cyber.view {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; margin: 0; padding: 0; z-index: 50; transform: none; 
+        }
+        
+        .cyber-wrapper {
+            position: relative; width: 100%; height: 100%; background-color: #05050a; background-image: radial-gradient(circle at 50% 50%, #110d21 0%, #05050a 100%); overflow: hidden; display: flex; justify-content: center; align-items: center; font-family: 'Courier New', Courier, monospace;
+        }
+
+        /* 故障风顶部艺术字 */
+        .cyber-glitch-container { position: absolute; top: 8%; left: 50%; transform: translateX(-50%); text-align: center; z-index: 10; pointer-events: none; }
+        .glitch { font-family: 'Courier New', Courier, monospace; font-size: 2.8rem; font-weight: 900; color: #fff; position: relative; text-transform: uppercase; letter-spacing: 6px; text-shadow: 0 0 15px rgba(0, 243, 255, 0.6); }
+        .glitch::before, .glitch::after { content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        .glitch::before { left: 4px; text-shadow: -2px 0 var(--neon-pink); clip: rect(24px, 550px, 90px, 0); animation: glitch-anim-2 3s infinite linear alternate-reverse; }
+        .glitch::after { left: -4px; text-shadow: -2px 0 var(--neon-cyan); clip: rect(85px, 550px, 140px, 0); animation: glitch-anim 2.5s infinite linear alternate-reverse; }
+        .glitch-sub { font-size: 1.1rem; color: var(--text-muted); letter-spacing: 3px; margin-top: 12px; animation: pulse 2s infinite; text-shadow: 0 2px 4px #000; }
+        
+        @keyframes glitch-anim {
+            0% { clip: rect(10px, 9999px, 31px, 0); } 20% { clip: rect(64px, 9999px, 11px, 0); } 40% { clip: rect(8px, 9999px, 91px, 0); }
+            60% { clip: rect(72px, 9999px, 45px, 0); } 80% { clip: rect(24px, 9999px, 83px, 0); } 100% { clip: rect(51px, 9999px, 12px, 0); }
+        }
+        @keyframes glitch-anim-2 {
+            0% { clip: rect(65px, 9999px, 100px, 0); } 20% { clip: rect(12px, 9999px, 55px, 0); } 40% { clip: rect(86px, 9999px, 20px, 0); }
+            60% { clip: rect(33px, 9999px, 80px, 0); } 80% { clip: rect(5px, 9999px, 35px, 0); } 100% { clip: rect(95px, 9999px, 10px, 0); }
+        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        /* HTML5 Canvas 物理引力网格 */
+        .cyber-grid-canvas { 
+            position: absolute; top: -30%; left: -50%; width: 200%; height: 160%; 
+            transform: perspective(800px) rotateX(55deg); transform-origin: center center; 
+            z-index: 0; pointer-events: none; 
+        }
+
+        .solar-system { position: relative; width: 420px; height: 420px; display: flex; justify-content: center; align-items: center; z-index: 10; margin-top: 5%;}
+        @media (max-width: 600px) { .solar-system { transform: scale(0.65); margin-top: 15%;} }
+
+        .cyber-sphere { position: relative; width: 240px; height: 240px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #150a2b, #04010a); border: 2px solid rgba(0, 243, 255, 0.3); animation: core-throb 3s ease-in-out infinite alternate; will-change: transform; z-index: 2; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+        @keyframes core-throb { 0% { box-shadow: inset 0 0 30px rgba(0, 243, 255, 0.2), 0 0 20px rgba(255, 0, 255, 0.2); } 100% { box-shadow: inset 0 0 60px rgba(0, 243, 255, 0.6), 0 0 50px rgba(255, 0, 255, 0.5), 0 0 80px rgba(0, 243, 255, 0.2); } }
+
+        .orbit { position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 2px dashed rgba(255, 0, 255, 0.4); box-shadow: 0 0 15px rgba(255, 0, 255, 0.2), inset 0 0 15px rgba(0, 243, 255, 0.2); z-index: 1; will-change: transform; }
+        .cyber-character-wrapper { position: absolute; top: -40px; left: 50%; transform: translateX(-50%) rotate(90deg); filter: drop-shadow(0 0 12px var(--neon-cyan)); animation: hover-bob 1.5s ease-in-out infinite alternate; }
+        @keyframes hover-bob { 0% { margin-top: 0px; } 100% { margin-top: -6px; } }
+
+        .cyber-cards-orbit { position: absolute; width: 100%; height: 100%; border-radius: 50%; z-index: 15; pointer-events: none; will-change: transform; }
+        .cyber-card-anchor { position: absolute; top: 50%; left: 50%; width: 0; height: 0; transform: rotate(var(--deg)) translateY(-260px); }
+        
+        /* 极简赛博全息线框节点 */
+        .cyber-card-item { 
+            position: absolute; width: 90px; height: 90px; top: -45px; left: -45px; border-radius: 50%; 
+            background: rgba(10, 15, 30, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 15px rgba(0,0,0,0.8), inset 0 0 20px var(--orb-color);
+            cursor: pointer; pointer-events: auto; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); 
+            --s: 1; transform: rotate(calc(0deg - var(--deg))) scale(var(--s)); overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+        .cyber-card-item::before { 
+            content: ''; position: absolute; top: 4px; left: 4px; right: 4px; bottom: 4px; 
+            border-radius: 50%; border: 1px dashed var(--orb-color); 
+            animation: spin 6s linear infinite; opacity: 0.5; transition: 0.3s; pointer-events: none;
+        }
+        .cyber-card-item:hover { 
+            border-color: var(--orb-color); 
+            box-shadow: 0 0 30px var(--orb-color), inset 0 0 30px var(--orb-color);
+            --s: 1.15; z-index: 20; 
+        }
+        .cyber-card-item:hover::before {
+            opacity: 1; animation-duration: 2s;
+        }
+        .cyber-card-item div { 
+            position: relative; z-index: 1; color: #fff; font-size: 0.95rem; font-weight: 800; 
+            text-shadow: 0 2px 4px #000, 0 0 10px var(--orb-color); line-height: 1.2; letter-spacing: 0.5px;
+        }
+        .cyber-card-item div small { display: block; font-size: 0.6rem; font-weight: 500; opacity: 0.8; margin-top: 3px; letter-spacing: 1px;}
+
+        .cyber-controls { position: absolute; bottom: 40px; z-index: 20; display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
+        .cyber-controls button { padding: 10px 20px; font-size: 14px; font-weight: bold; letter-spacing: 2px; cursor: pointer; background: rgba(10, 5, 20, 0.8); color: var(--neon-cyan); border: 1px solid var(--neon-cyan); clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%); box-shadow: 0 0 10px rgba(0, 243, 255, 0.2); transition: all 0.2s; outline: none; text-transform: uppercase; }
+        .cyber-controls button:hover { background: rgba(0, 243, 255, 0.1); text-shadow: 0 0 5px var(--neon-cyan); }
+        .cyber-controls button.active { background: var(--neon-cyan); color: #000; box-shadow: 0 0 25px var(--neon-cyan); border-color: var(--neon-cyan); text-shadow: none; }
+
+        /* ==========================================================================
+           10. 履历页海报滑动组件
+           ========================================================================== */
+        .resume-gallery { display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 1.5rem; margin-bottom: 1rem; scrollbar-width: none; -ms-overflow-style: none; scroll-behavior: smooth; cursor: grab; }
+        .resume-gallery::-webkit-scrollbar { display: none; }
+        .resume-gallery:active { cursor: grabbing; }
+
+        .resume-poster { flex: 0 0 240px; height: 140px; border-radius: 12px; overflow: hidden; position: relative; cursor: pointer; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid transparent; box-shadow: var(--shadow-sm); opacity: 0.6; }
+        .resume-poster:hover { opacity: 1; transform: translateY(-4px); box-shadow: var(--shadow-md); }
+        .resume-poster.active { opacity: 1; border-color: var(--primary); transform: scale(1.03); box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3); }
+        .resume-poster img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; pointer-events: none; }
+        .resume-poster:hover img { transform: scale(1.08); }
+        .poster-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.1) 100%); display: flex; align-items: flex-end; padding: 1.2rem 1rem; color: #fff; font-weight: 800; font-size: 1.05rem; letter-spacing: 1px; text-shadow: 0 2px 4px rgba(0,0,0,0.8); pointer-events: none; }
+
+        /* ==========================================================================
+           11. 内联横向画廊 (适用于水院风光)
+           ========================================================================== */
+        .inline-gallery { display: flex; gap: 1.5rem; overflow-x: auto; padding-bottom: 1.5rem; margin-bottom: 1rem; scrollbar-width: none; -ms-overflow-style: none; scroll-behavior: smooth; cursor: grab; }
+        .inline-gallery::-webkit-scrollbar { display: none; }
+        .inline-gallery:active { cursor: grabbing; }
+        
+        .inline-poster { flex: 0 0 320px; height: 220px; border-radius: 12px; overflow: hidden; position: relative; cursor: zoom-in; box-shadow: var(--shadow-sm); transition: 0.3s; background: var(--surface-solid); }
+        @media (max-width: 768px) { .inline-poster { flex: 0 0 280px; height: 180px; } }
+        .inline-poster:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+        .inline-poster img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; pointer-events: none; }
+        .inline-poster:hover img { transform: scale(1.08); }
+
+        /* ==========================================================================
+           12. 组合式 Poker 卡片动效 (AI漫剧 & 摄影画廊)
+           ========================================================================== */
+        .poker-gallery-container { position: relative; width: 100%; height: 500px; margin: 2rem 0; display: flex; justify-content: center; align-items: center; cursor: pointer; perspective: 1000px;}
+        .poker-card { position: absolute; width: 280px; height: 400px; border: 2px solid rgba(255,255,255,0.15); border-radius: 16px; background-color: var(--surface-solid); transform-origin: bottom center; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); user-select: none; -webkit-user-select: none; will-change: transform; transition: border-color 0.3s; }
+        .poker-card img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+        .poker-gallery-container:hover .poker-card:nth-last-child(1) { box-shadow: 0 10px 40px rgba(0, 243, 255, 0.4); border-color: var(--neon-cyan); }
+        @media (max-width: 768px) { .poker-card { width: 200px; height: 280px; } .poker-gallery-container { height: 400px; } }
+
+        /* ==========================================================================
+           13. 全局页面切换加载动画 (Loading Transition Overlay)
+           ========================================================================== */
+        .loading-overlay { position: fixed; display: flex; flex-direction: column; justify-content: center; align-items: center; top: 0; left: 0; width: 100%; height: 100vh; background-color: #05050a; z-index: 100000000; transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease; }
+        .loading-overlay svg { width: 5rem; margin-bottom: 2rem; overflow: visible; }
+        .loading-overlay svg circle { fill: none; stroke: var(--neon-cyan); stroke-width: 8; stroke-dasharray: 160; stroke-dashoffset: 160; transform-origin: center; animation: circle_rotate 1.5s ease-in-out infinite; }
+        @keyframes circle_rotate { 0% { transform: rotate(0deg); stroke-dashoffset: 160; } 100% { transform: rotate(360deg); stroke-dashoffset: -160; } }
+        .loading-overlay p { font-family: 'Courier New', Courier, monospace; font-size: 1.5rem; color: var(--neon-cyan); font-weight: 900; letter-spacing: 4px; text-shadow: 0 0 10px rgba(0, 243, 255, 0.5); }
+        .loading_out { transform: translateY(100%); opacity: 0; pointer-events: none; }
+
+        /* ==========================================================================
+           14. 首页底部个人专属签名栏 (Footer)
+           ========================================================================== */
+        .home-footer {
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto 2rem auto;
+            padding: 2rem 1.25rem;
+            text-align: center;
+            border-top: 1px dashed var(--border);
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 0.85rem;
+        }
+        .home-footer .quote {
+            color: var(--text-main);
+            font-style: italic;
+            margin: 8px 0;
+            font-size: 0.95rem;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+        }
+        .footer-badges {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 5px;
+        }
+        .badge-group {
+            display: inline-flex;
+            border-radius: 4px;
+            overflow: hidden;
+            font-size: 0.75rem;
+            color: #fff;
+            font-family: -apple-system, sans-serif;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .badge-left { background: #374151; padding: 2px 6px; }
+        .badge-right { padding: 2px 6px; text-shadow: none; }
+
+    </style>
+</head>
+<body>
+
+    <!-- 遮罩加载层 -->
+    <div class="loading-overlay">
+        <svg viewBox='0 0 50 50'>
+            <circle r='20' cx='25' cy='25'></circle>
+        </svg>
+        <p>SYSTEM LOADING...</p>
+    </div>
+
+    <svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
+        <symbol id="icon-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></symbol>
+        <symbol id="icon-msg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></symbol>
+        <symbol id="icon-wechat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 10c-2.8 0-5 2-5 4.5S4.8 19 8 19c.6 0 1.2-.1 1.7-.3L12 21l-1.3-2.2c1.4-1 2.3-2.5 2.3-4.3 0-2.5-2.2-4.5-5-4.5z"></path><path d="M16.5 6C13.5 6 11 8 11 10.5c0 .3.1.6.1.9 1.1-.3 2.3-.4 3.4-.4 3.3 0 6 2.4 6 5.5 0 1 .3 2 1 2.8l1.5 2.5-2.8-1.5c-1.1.7-2.3 1.2-3.7 1.2-3.3 0-6-2.4-6-5.5S9.2 6 12.5 6h4z"></path></symbol>
+        <symbol id="icon-opa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 1-10 10A10 10 0 0 1 12 2Z"></path><path d="M12 2v20"></path><path d="M2 12h20"></path><path d="m19 5-7 7 7 7"></path><path d="m5 19 7-7-7-7"></path></symbol>
+        <symbol id="icon-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></symbol>
+        <symbol id="icon-back-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></symbol>
+        <symbol id="icon-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></symbol>
+    </svg>
+
+    <div class="video-bg" id="video-bg">
+        <div class="video-overlay"></div>
+    </div>
+
+    <nav>
+        <div class="nav-inner">
+            <div class="nav-left-group">
+                <div class="nav-brand"><span>白</span>糖 CV</div>
+                <button class="back-btn" onclick="goBack()" aria-label="返回上一页">
+                    <svg width="18" height="18"><use href="#icon-back-arrow"></use></svg> 返回上一页
+                </button>
+            </div>
+            
+            <div class="nav-actions">
+                <button class="icon-btn" onclick="navTo('home')" title="首页"><svg width="18" height="18"><use href="#icon-home"></use></svg></button>
+                <button class="icon-btn" onclick="navTo('guestbook')" title="留言板"><svg width="18" height="18"><use href="#icon-msg"></use></svg></button>
+                <button class="icon-btn wechat-btn" onclick="openWechat()" title="添加微信"><svg width="18" height="18"><use href="#icon-wechat"></use></svg></button>
+                <button class="icon-btn subscribe-btn" onclick="openSubscribe()" title="订阅与催更"><svg width="18" height="18"><use href="#icon-bell"></use></svg></button>
+                <button class="icon-btn" id="opacity-btn" title="调整透明度"><svg width="18" height="18"><use href="#icon-opa"></use></svg></button>
+            </div>
+        </div>
+    </nav>
+
+    <main id="view-home" class="view active">
+        <div class="home-hero">
+            <h1 class="home-title">白糖</h1>
+            <p class="home-subtitle">机器人工程 | AI智能体应用</p>
+            <p class="home-greeting" id="dynamic-greeting"></p>
+            
+            <div class="scroll-down-arrow" onclick="document.getElementById('home-content').scrollIntoView({behavior: 'smooth'})">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+        </div>
+
+        <div class="home-layout" id="home-content">
+            <div class="home-article-list">
+                
+                <article class="article-card" onclick="navTo('cyber')">
+                    <div class="article-cover"><img src="10002.jpg" alt="赛博时刻" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23cbd5e1%22 /><text x=%2250%25%22 y=%2250%25%22 font-family=%22sans-serif%22 font-size=%2216%22 fill=%22%23475569%22 text-anchor=%22middle%22 dy=%22.3em%22>图片丢失</text></svg>'"></div>
+                    <div class="article-info">
+                        <div class="article-meta"><span style="color:var(--primary)">📅 全新上线</span> <span style="color:var(--secondary)">🌌 沉浸体验</span></div>
+                        <h3 class="article-title">🌐 【赛博时刻】核心漫游者空间</h3>
+                        <div class="article-desc">进入全息赛博空间。所有内容板块均围绕核心数据球排列，通过神经直连响应你的鼠标动作。沉浸式的导航体验，立即切换！</div>
+                    </div>
+                </article>
+
+                <article class="article-card" onclick="navTo('resume')">
+                    <div class="article-cover"><img src="10001.webp" alt="个人履历" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23cbd5e1%22 /><text x=%2250%25%22 y=%2250%25%22 font-family=%22sans-serif%22 font-size=%2216%22 fill=%22%23475569%22 text-anchor=%22middle%22 dy=%22.3em%22>图片丢失</text></svg>'"></div>
+                    <div class="article-info">
+                        <div class="article-meta"><span>📅 发布于 2026-03</span> <span>🏷️ 个人档案</span></div>
+                        <h3 class="article-title">👨‍💻 【关于我】打破边界的代码行者</h3>
+                        <div class="article-desc">机器人工程专业极客，深耕AI大模型应用。精通 Gemini/GPT/千问 Prompt调优，熟练运用 Trae 赋能全栈开发；具备 MaxKB 知识库搭建与 Quick BI 数据分析实战经验。多端斩获阿里系AI高级认证，致力用技术与创意打破边界。</div>
+                    </div>
+                </article>
+
+                <article class="article-card" onclick="navTo('games')">
+                    <div class="article-cover"><img src="10002.webp" alt="网页小游戏" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23cbd5e1%22 /><text x=%2250%25%22 y=%2250%25%22 font-family=%22sans-serif%22 font-size=%2216%22 fill=%22%23475569%22 text-anchor=%22middle%22 dy=%22.3em%22>图片丢失</text></svg>'"></div>
+                    <div class="article-info">
+                        <div class="article-meta"><span>📅 更新于 2026-03</span> <span>🎮 互动工坊</span></div>
+                        <h3 class="article-title">🚀 【极速射击】飞机大战——《奶龙危机》</h3>
+                        <div class="article-desc">拒绝纸上谈兵，用代码重塑童年幻想！运用 Gemini 独立开发的网页互动小游戏，含碰撞检测与动态生成逻辑。无需下载，点击即刻开启沉浸式畅玩体验！</div>
+                    </div>
+                </article>
+
+                <article class="article-card" onclick="navTo('photo')">
+                    <div class="article-cover"><img src="10003.jpg" alt="摄影作品" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23cbd5e1%22 /><text x=%2250%25%22 y=%2250%25%22 font-family=%22sans-serif%22 font-size=%2216%22 fill=%22%23475569%22 text-anchor=%22middle%22 dy=%22.3em%22>图片丢失</text></svg>'"></div>
+                    <div class="article-info">
+                        <div class="article-meta"><span>📅 更新于 2026-03</span> <span>📷 光影切片</span></div>
+                        <h3 class="article-title">🎞️ 【纪实】被快门挽留的时光</h3>
+                        <div class="article-desc">时间像沙漏，我们眼睁睁看着珍贵的瞬间——如沙子般从指缝溜走。点击进入无限循环的 3D 扑克牌式互动相册，翻转找回失去的光影。</div>
+                    </div>
+                </article>
+
+                <article class="article-card" onclick="navTo('school')">
+                    <div class="article-cover"><img src="10003.webp" alt="浙水院风光" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23cbd5e1%22 /><text x=%2250%25%22 y=%2250%25%22 font-family=%22sans-serif%22 font-size=%2216%22 fill=%22%23475569%22 text-anchor=%22middle%22 dy=%22.3em%22>图片丢失</text></svg>'"></div>
+                    <div class="article-info">
+                        <div class="article-meta"><span>📅 更新于 2026-03</span> <span>🎓 校园指南</span></div>
+                        <h3 class="article-title">🏫 【水院风华】定义你的“水”样青春</h3>
+                        <div class="article-desc">钱塘江畔听潮起潮落，南浔湖畔抚风和日丽。硬核工科底蕴与多元成长舞台，点击探索 ESI 全球前 1% 的水院魅力与成长蓝图。</div>
+                    </div>
+                </article>
+
+                <article class="article-card" onclick="navTo('aicomic')">
+                    <div class="article-cover">
+                        <img src="10004.jpg" alt="AI漫剧" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23cbd5e1%22 /><text x=%2250%25%22 y=%2250%25%22 font-family=%22sans-serif%22 font-size=%2216%22 fill=%22%23475569%22 text-anchor=%22middle%22 dy=%22.3em%22>图片丢失</text></svg>'">
+                    </div>
+                    <div class="article-info">
+                        <div class="article-meta"><span>📅 更新于 2026-03</span> <span>🤖 AI创作</span></div>
+                        <h3 class="article-title">🎬 【AI漫剧】一键生成的赛博幻想</h3>
+                        <div class="article-desc">从想法到漫画生成再到视频生成，以及文案编写，AI一体化。#AI创作浪潮计划</div>
+                    </div>
+                </article>
+
+            </div>
+
+            <aside class="home-sidebar">
+                
+                <div class="sidebar-card profile-card">
+                    <div class="profile-avatar-wrap" onclick="navTo('resume')">
+                        <img src="10001.webp" alt="头像" class="profile-avatar" onerror="this.onerror=null; this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Baitang&backgroundColor=0f172a'">
+                    </div>
+                    <h2 class="profile-name">白糖</h2>
+                    <p class="profile-desc">机器人工程 | AI智能体应用</p>
+                    <div style="display: flex; gap: 10px; justify-content: center; margin-top: 1.2rem; width: 100%;">
+                        <button class="btn btn-primary" onclick="navTo('resume')" style="padding: 0.5rem; flex: 1; font-size: 0.85rem;">关于我</button>
+                        <button class="btn btn-outline" onclick="openWechat()" style="padding: 0.5rem; flex: 1; font-size: 0.85rem;">联系我</button>
+                    </div>
+                </div>
+
+                <div class="sidebar-card">
+                    <h3>📊 站点统计</h3>
+                    <div class="stat-box">
+                        <span class="stat-num" id="busuanzi_value_site_pv">...</span>
+                        <span class="stat-label">总访问人次 (次)</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-num" id="run-time" style="font-size: 1.2rem;">...</span>
+                        <span class="stat-label">网站安全运行</span>
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+        <!-- 底部极客信息栏 -->
+        <footer class="home-footer scroll-reveal">
+            <div>©2024 - 2026 By 白糖</div>
+            <div class="quote">✨ 灵感/代码取自 B站：JIEJOE_ & 抖音：Maybe you</div>
+            
+            <div class="footer-badges">
+                <span class="badge-group"><span class="badge-left">CDN</span><span class="badge-right" style="background:#f59e0b;">jsDelivr</span></span>
+                <span class="badge-group"><span class="badge-left">Hosted</span><span class="badge-right" style="background:#4b5563;">Vercel</span></span>
+                <span class="badge-group"><span class="badge-left">Hosted</span><span class="badge-right" style="background:#3b82f6;">Coding</span></span>
+                <span class="badge-group"><span class="badge-left">Source</span><span class="badge-right" style="background:#111827;">Github</span></span>
+                <span class="badge-group"><span class="badge-left">Copyright</span><span class="badge-right" style="background:#ef4444;">BY-NC-SA 4.0</span></span>
+            </div>
+            <div class="footer-badges" style="margin-top: 5px;">
+                <span class="badge-group"><span class="badge-left">Frame</span><span class="badge-right" style="background:#06b6d4;">HTML5</span></span>
+                <span class="badge-group"><span class="badge-left">Theme</span><span class="badge-right" style="background:#8b5cf6;">Cyberpunk CV</span></span>
+            </div>
+        </footer>
+
+    </main>
+
+    <!-- ================= 赛博时刻独立视图空间 ================= -->
+    <main id="view-cyber" class="view">
+        <div class="cyber-wrapper">
+            
+            <!-- HTML5 Canvas 物理扰动网格 -->
+            <canvas class="cyber-grid-canvas"></canvas>
+            <div id="matrix-container"></div>
+            
+            <!-- 顶部故障风全息文字 -->
+            <div class="cyber-glitch-container">
+                <h1 class="glitch" data-text="SYSTEM NEURAL LINK">SYSTEM NEURAL LINK</h1>
+                <div class="glitch-sub">STATUS: <span style="color:var(--neon-cyan)">ACTIVE</span> // DISTORTION DETECTED</div>
+            </div>
+
+            <div class="solar-system" id="cyber-solar-system">
+                
+                <div class="cyber-sphere" id="cyber-core">
+                    <svg viewBox="0 0 200 200" width="100%" height="100%">
+                        <defs>
+                            <filter id="glow">
+                                <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <ellipse cx="100" cy="100" rx="96" ry="25" fill="none" stroke="#00f3ff" stroke-width="1" opacity="0.4"/>
+                        <ellipse cx="100" cy="100" rx="96" ry="60" fill="none" stroke="#00f3ff" stroke-width="1.5" opacity="0.5"/>
+                        <ellipse cx="100" cy="100" rx="25" ry="96" fill="none" stroke="#ff00ff" stroke-width="1" opacity="0.4"/>
+                        <ellipse cx="100" cy="100" rx="60" ry="96" fill="none" stroke="#ff00ff" stroke-width="1.5" opacity="0.5"/>
+                        <g filter="url(#glow)">
+                            <path d="M 40 120 L 70 120 L 90 140 L 160 140" fill="none" stroke="#00f3ff" stroke-width="2"/>
+                            <circle cx="40" cy="120" r="4" fill="#ff00ff"/>
+                            <circle cx="160" cy="140" r="4" fill="#ff00ff"/>
+                            <path d="M 170 70 L 140 70 L 110 50 L 60 50" fill="none" stroke="#ff00ff" stroke-width="2"/>
+                            <circle cx="170" cy="70" r="4" fill="#00f3ff"/>
+                            <circle cx="60" cy="50" r="4" fill="#00f3ff"/>
+                            <circle cx="100" cy="100" r="10" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="4 2"/>
+                        </g>
+                    </svg>
+                </div>
+                
+                <div class="orbit" id="orbit-container">
+                    <div class="cyber-character-wrapper">
+                        <svg viewBox="0 0 140 100" width="80" height="60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M 5 65 L 25 65 M 10 55 L 20 55 M 10 75 L 20 75" stroke="#ff00ff" stroke-width="3" stroke-linecap="round"/>
+                            <path d="M 25 70 L 110 70 L 125 50 L 35 50 Z" fill="#0a0a1a" stroke="#00f3ff" stroke-width="2"/>
+                            <line x1="35" y1="65" x2="100" y2="65" stroke="#ff00ff" stroke-width="2"/>
+                            <ellipse cx="40" cy="70" rx="14" ry="6" fill="#00f3ff" opacity="0.9"/>
+                            <ellipse cx="100" cy="70" rx="14" ry="6" fill="#00f3ff" opacity="0.9"/>
+                            <ellipse cx="40" cy="70" rx="6" ry="2" fill="#fff"/>
+                            <ellipse cx="100" cy="70" rx="6" ry="2" fill="#fff"/>
+                            <path d="M 55 50 L 65 25 L 90 30 L 75 50 Z" fill="#1a0b2e" stroke="#ff00ff" stroke-width="2"/>
+                            <path d="M 70 30 L 95 45 L 105 50" stroke="#00f3ff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M 60 45 L 70 60 L 65 70" stroke="#444" stroke-width="6" stroke-linecap="round"/>
+                            <rect x="85" y="15" width="24" height="22" rx="6" fill="#050505" stroke="#00f3ff" stroke-width="2" transform="rotate(15 95 25)"/>
+                            <path d="M 95 18 L 107 24 L 103 28 L 91 22 Z" fill="#ff00ff"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="cyber-cards-orbit" id="cyber-cards-container">
+                    <div class="cyber-card-anchor" style="--deg: 0deg;">
+                        <div class="cyber-card-item" style="--orb-color: #3b82f6;" onclick="navTo('resume')">
+                            <div>👨‍💻 关于我<small>个人档案</small></div>
+                        </div>
+                    </div>
+                    <div class="cyber-card-anchor" style="--deg: 72deg;">
+                        <div class="cyber-card-item" style="--orb-color: #ef4444;" onclick="navTo('games')">
+                            <div>🚀 奶龙危机<small>互动工坊</small></div>
+                        </div>
+                    </div>
+                    <div class="cyber-card-anchor" style="--deg: 144deg;">
+                        <div class="cyber-card-item" style="--orb-color: #10b981;" onclick="navTo('photo')">
+                            <div>🎞️ 光影切片<small>摄影作品</small></div>
+                        </div>
+                    </div>
+                    <div class="cyber-card-anchor" style="--deg: 216deg;">
+                        <div class="cyber-card-item" style="--orb-color: #f59e0b;" onclick="navTo('school')">
+                            <div>🏫 水院风华<small>校园指南</small></div>
+                        </div>
+                    </div>
+                    <div class="cyber-card-anchor" style="--deg: 288deg;">
+                        <div class="cyber-card-item" style="--orb-color: #d946ef;" onclick="navTo('aicomic')">
+                            <div>🎬 AI漫剧<small>一键生成</small></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="cyber-controls">
+                <button id="btn-mouse" class="active">神经直连 [Neural]</button>
+                <button id="btn-auto">系统托管 [Auto]</button>
+            </div>
+        </div>
+    </main>
+
+    <main id="view-resume" class="view">
+        <div class="container content-wrap" id="resume-content"></div>
+    </main>
+
+    <!-- ====== 摄影页：切换为 Poker 纸牌翻转画廊 ====== -->
+    <main id="view-photo" class="view">
+        <div class="container content-wrap">
+            <h2 class="section-title">摄影作品</h2>
+            <div class="card">
+                <p style="color: var(--text-main); font-size:1rem; margin-bottom:1rem; line-height: 1.8;">
+                    时间像沙漏，我们眼睁睁看着珍贵的瞬间——母亲眼角的笑纹、清晨穿过树叶的丁达尔效应、老街尽头渐渐模糊的背影——如沙子般从指缝溜走。
+                </p>
+                <h3 style="font-size: 1.2rem; color: var(--neon-cyan); margin-top: 2rem; margin-bottom: 0.5rem; text-align: center;">📷 光影相册 (点击卡牌翻阅)</h3>
+                
+                <div class="poker-gallery-container" id="photo-poker-container" onclick="photoPoker.move()" title="点击翻牌">
+                    <!-- DOM 将由 JavaScript 自动生成注入 -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <main id="view-school" class="view">
+        <div class="container content-wrap">
+            <h2 class="section-title">浙水院</h2>
+            <div class="card">
+                <h3 style="color:var(--primary); font-size:1.4rem; text-align:center; margin-bottom:1rem;">浙江水利水电学院：在这里，定义你的“水”样青春</h3>
+                <p class="school-intro-text">高考的笔锋即将停歇，未来的画卷正待展开。你是否在寻找这样一所大学：它既有扎实的专业底蕴，为你铺就通往未来的坚实道路；又有多元的成长空间，让你自由探索无限可能？</p>
+                <p class="school-intro-text">欢迎来到浙江水利水电学院，这里不仅是知识的殿堂，更是你定义自我、拥抱世界的起点。</p>
+                <h4 class="school-intro-title">你的专业，不止是“学知识”，更是“造未来”</h4>
+                <p class="school-intro-text">我们深知，选择专业就是选择未来的赛道。作为水利部与浙江省共建的高校，我们将“水利”特色做到了极致，更以此为核心，衍生出“水利+”的广阔天地。</p>
+                <p class="school-intro-text"><strong>硬核实力，底气十足：</strong>我们的水利水电工程、智慧水利、电气工程等专业，是国家级和省级的“王牌”。在这里，你接触的不是过时的理论，而是与行业前沿同步的“真功夫”。工程学学科已进入ESI全球排名前1%，这是你未来履历上闪亮的注脚。</p>
+                <p class="school-intro-text"><strong>实践为王，无缝衔接：</strong>厌倦了纸上谈兵？我们懂你。学校建有国家水情教育基地和众多高水平实验室，深化产教融合。从大二开始，你就有机会进入科研团队或合作企业，参与真实项目。我们培养的，是毕业就能上手、深受国企和事业单位青睐的“实干家”，毕业生就业率常年稳定在95%左右。</p>
+                <h4 class="school-intro-title">你的生活，不止是“宿舍食堂”，更是“诗与远方”</h4>
+                <p class="school-intro-text">大学四年，是你独立生活的开始。我们为你准备了两个风格迥异的家，让你在两种城市气质中，找到属于自己的节奏。</p>
+                <p class="school-intro-text"><strong>杭州钱塘校区：</strong>身处下沙高教园区的核心，地铁直达。这里是活力与机遇的代名词，你可以轻松融入杭州的互联网浪潮，感受一线城市的脉搏。</p>
+                <p class="school-intro-text"><strong>湖州南浔校区：</strong>坐落于历史文化名镇，临江傍湖，生态宜居。这里宁静而优美，是潜心治学、涵养心性的理想之地。</p>
+                <p class="school-intro-text">无论在哪一个校区，你都将拥有舒适的生活体验。设施完善的空调宿舍、独立卫浴，以及汇聚南北风味的食堂，我们想让你把精力更多地投入到探索世界，而非担忧生活。</p>
+                <h4 class="school-intro-title">你的成长，不止是“一张文凭”，更是“无限可能”</h4>
+                <p class="school-intro-text">我们坚信，每个人的潜能都是一片待开垦的沃土。在浙水院，我们为你提供“通识教育+专业教育+个性化发展”的培养体系，为你量身定制成长蓝图。</p>
+                <p class="school-intro-text"><strong>跨界融合，拓宽边界：</strong>除了主修专业，你可以通过辅修学位、微专业等方式，探索自己的第二兴趣。</p>
+                <p class="school-intro-text"><strong>广阔舞台，绽放光彩：</strong>80余个学生社团，从科技创新到文艺公益，总有一个能装下你的热爱。在这里，你将与志同道合的伙伴一起，策划活动、组织比赛，让青春的活力尽情挥洒。</p>
+                <p class="school-intro-text"><strong>国际视野，连接世界：</strong>我们与多所海外高校建立了合作关系，为你提供交换学习和联合培养的机会，让世界成为你的课堂。</p>
+                <p class="school-intro-text" style="margin-top: 1.5rem; font-weight: bold; color: var(--primary);">这个夏天，期待与你在钱塘江畔或南浔湖畔相遇。在浙江水利水电学院，你的潜能，就是版图。由你落笔，由你定义。</p>
+                
+                <h3 style="font-size:1.1rem; margin-top: 2.5rem; margin-bottom:1rem; border-top: 1px dashed var(--border); padding-top: 1.5rem;">专属校园风光记录 <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: normal;">(左右滑动浏览)</span></h3>
+                <div class="inline-gallery" id="school-gallery">
+                    <div class="inline-poster"><img src="水院/a.jpg" loading="lazy" alt="水院风光1" onerror="this.closest('.inline-poster').style.display='none'" onclick="zoom(this.getAttribute('src'))"></div>
+                    <div class="inline-poster"><img src="水院/b.jpg" loading="lazy" alt="水院风光2" onerror="this.closest('.inline-poster').style.display='none'" onclick="zoom(this.getAttribute('src'))"></div>
+                    <div class="inline-poster"><img src="水院/c.jpg" loading="lazy" alt="水院风光3" onerror="this.closest('.inline-poster').style.display='none'" onclick="zoom(this.getAttribute('src'))"></div>
+                    <div class="inline-poster"><img src="水院/d.jpg" loading="lazy" alt="水院风光4" onerror="this.closest('.inline-poster').style.display='none'" onclick="zoom(this.getAttribute('src'))"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <main id="view-games" class="view">
+        <div class="container content-wrap">
+            <h2 class="section-title">网页小游戏</h2>
+            <div class="card" style="display: flex; flex-direction: column; gap: 1rem; position: relative;">
+                <img src="奶龙危机.png" alt="奶龙危机" style="width: 100%; border-radius: 8px; box-shadow: var(--shadow-sm);" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23cbd5e1%22 /><text x=%2250%25%22 y=%2250%25%22 font-family=%22sans-serif%22 font-size=%2216%22 fill=%22%23475569%22 text-anchor=%22middle%22 dy=%22.3em%22>图片在云端丢失，请检查GitHub</text></svg>'">
+                <div>
+                    <h3 style="color: var(--primary); font-size: 1.4rem; margin-bottom: 0.5rem;">飞机大战——《奶龙危机》</h3>
+                    <p style="font-size: 0.95rem; margin-bottom: 1rem; color: var(--text-main);">运用 Gemini 独立开发的网页互动小游戏，包含碰撞检测、动态敌机生成等前端逻辑，快来体验一下吧！</p>
+                </div>
+                <button class="btn btn-primary" onclick="openGame('飞机大战——《奶龙危机》')" style="width: 100%; padding: 1rem; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);">▶️ 点击开始游戏</button>
+            </div>
+        </div>
+    </main>
+
+    <main id="view-guestbook" class="view">
+        <div class="container content-wrap">
+            <h2 class="section-title">留言板</h2>
+            <div class="card">
+                <p style="font-size: 0.85rem; color: var(--text-muted); text-align: center; margin-bottom: 1rem;">(当前为本地体验模式，您的留言将仅保存在当前浏览器中)</p>
+                
+                <h3 style="color: var(--primary); font-size: 1.5rem; margin-bottom: 1rem; text-align: center;">这个人很期待你的留言。✨</h3>
+                <div class="comment-input-area">
+                    <textarea id="comment-input" placeholder="写下你想对我说的话，或者留下你的期待..." required></textarea>
+                    <button class="btn btn-primary" onclick="submitComment()">发送留言</button>
+                </div>
+                <h4 style="margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">最新留言</h4>
+                <div class="comment-list" id="comment-list"></div>
+            </div>
+        </div>
+    </main>
+    
+    <main id="view-aicomic" class="view">
+        <div class="container content-wrap">
+            <h2 class="section-title">AI 漫剧</h2>
+            
+            <div class="card" style="margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+                <div style="flex: 1;">
+                    <h3 style="color: var(--primary); font-size: 1.2rem; margin-bottom: 0.5rem;">📖 创作秘籍：Gemini 25宫格分镜生成</h3>
+                    <p style="color: var(--text-main); font-size: 0.95rem;">点击查看详细的保姆级飞书文档教程，带你零基础跑通 AI 漫剧全流程。</p>
+                </div>
+                <a href="https://rcn2y4b2gvyh.feishu.cn/docx/CVnidjzH1olI9AxFSPpcWPiGnsh?from=from_copylink" target="_blank" class="btn btn-primary" style="flex: 0 0 auto; min-width: 120px;">查看飞书教程</a>
+            </div>
+
+            <div class="card">
+                <p style="color: var(--text-main); font-size:1rem; margin-bottom:1rem; line-height: 1.8;">从想法到漫画生成再到视频生成，以及文案编写，AI一体化。#AI创作浪潮计划</p>
+                
+                <h3 style="font-size: 1.2rem; color: var(--neon-pink); margin-top: 2rem; margin-bottom: 0.5rem; text-align: center;">🃏 视觉切片画廊 (点击卡牌翻阅)</h3>
+                
+                <div class="poker-gallery-container" id="comic-poker-container" onclick="comicPoker.move()" title="点击翻牌">
+                    <!-- DOM 将由 JavaScript 自动生成注入 -->
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <div id="wechat-modal" class="lightbox" onclick="closeWechatModal()">
+        <div class="modal-card" onclick="event.stopPropagation()">
+            <p>我是白糖，这里没有广告，<br>只有想认识你的我。✨</p>
+            <img src="微信二维码.jpg" alt="微信二维码" style="max-width: 250px; width: 100%; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22250%22 height=%22250%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23cbd5e1%22 /><text x=%2250%25%22 y=%2250%25%22 font-family=%22sans-serif%22 font-size=%2214%22 fill=%22%23475569%22 text-anchor=%22middle%22 dy=%22.3em%22>请检查GitHub是否上传 微信二维码.jpg</text></svg>'">
+        </div>
+    </div>
+
+    <div id="subscribe-modal" class="lightbox" onclick="closeSubscribeModal()">
+        <div class="modal-card" onclick="event.stopPropagation()">
+            <h3 style="color: #f59e0b; font-size: 1.5rem; margin-bottom: 1rem;">🔔 订阅与催更</h3>
+            <p style="font-size: 1.1rem; color: var(--text-main); margin-bottom: 1.5rem; line-height: 1.6;">发现作者又偷懒了，快去催更吧！</p>
+            <a href="mailto:3043305894@qq.com?subject=催更啦！快去更新网站！&body=白糖，你的主页该更新内容啦！" class="btn subscribe-btn" style="width: 100%; padding: 0.8rem; font-size: 1.1rem;">发送催更邮件</a>
+        </div>
+    </div>
+
+    <div id="game-modal" class="lightbox" style="flex-direction: column; padding: 1rem; z-index: 100001; pointer-events: none;">
+        <div style="width: 100%; max-width: 800px; display: flex; justify-content: flex-end; margin-bottom: 15px; pointer-events: auto;">
+            <button onclick="closeGame()" style="color: white; font-size: 1.5rem; background: rgba(255,255,255,0.2); backdrop-filter: blur(4px); width: 45px; height: 45px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.4); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;">✖</button>
+        </div>
+        <iframe id="game-frame" src="" style="width: 100%; max-width: 800px; height: 80vh; border: 2px solid rgba(255,255,255,0.2); border-radius: 12px; background: #000; box-shadow: 0 0 40px rgba(0,0,0,0.8); pointer-events: auto;"></iframe>
+    </div>
+
+    <div id="image-modal" class="lightbox" onclick="closeLightboxModal()">
+        <img id="modal-img" src="" alt="查看图片" onclick="event.stopPropagation()" style="pointer-events: auto;">
+    </div>
+
+    <button class="fab" id="back-top" aria-label="返回顶部">
+        <svg width="24" height="24"><use href="#icon-up"></use></svg>
+    </button>
+
+    <script>
+        // JIEJOE produce (Drag Scroll Helper)
+        window.bindDragScroll = function(ele) {
+            if (!ele) return;
+            let isDown = false;
+            let startX;
+            let scrollLeft;
+            let isDragging = false; 
+
+            ele.addEventListener('mousedown', (e) => {
+                isDown = true;
+                isDragging = false;
+                startX = e.pageX - ele.offsetLeft;
+                scrollLeft = ele.scrollLeft;
+            });
+            ele.addEventListener('mouseleave', () => { isDown = false; });
+            ele.addEventListener('mouseup', () => { 
+                isDown = false; 
+            });
+            ele.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - ele.offsetLeft;
+                const walk = (x - startX) * 1.5; 
+                if(Math.abs(walk) > 5) isDragging = true; 
+                ele.scrollLeft = scrollLeft - walk;
+            });
+
+            ele.addEventListener('click', (e) => {
+                if(isDragging) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                }
+            }, true);
+
+            ele.addEventListener('wheel', (e) => {
+                if (ele.scrollWidth > ele.clientWidth) {
+                    e.preventDefault();
+                    ele.scrollLeft += e.deltaY;
+                }
+            }, { passive: false });
+        };
+
+        const resumeData = {
+            bio: "机器人工程专业极客，深耕AI大模型应用。精通 Gemini/GPT/千问 Prompt调优，熟练运用 Trae 赋能全栈开发；具备 MaxKB 知识库搭建与 Quick BI 数据分析实战经验。多端斩获阿里系AI高级认证，致力用技术与创意打破边界。",
+            contact: { phone: "18668087606", email: "3043305894@qq.com" },
+            skillsTags: ["Prompt调优", "Trae/Gemini开发", "Quick BI数据分析", "MaxKB知识库", "可视化排版"],
+            experiences: {
+                "竞赛与实战": [
+                    { title: "经济案例分析大赛", company: "核心分析与汇报 | 2025.12 - 至今", desc: ["在48小时极限赛程内，创新性引入AI大模型辅助提取经济学指标，文本解析效率较传统模式提升50%。", "浓缩提炼出10+页高质量汇报PPT并完成演示，获指导老师高度认可。"] },
+                    { title: "张锡峰学长APP实战训练营", company: "开发与AI创作 | 2026.02 - 至今", desc: ["运用 Trae 工具独立开发完成多款交互Web小游戏（飞机大战、刀剑大战）及个人博客网站。", "利用 Gemini+Sora 制作精美AI漫画与视频，单品最高播放量3300+，获赞330+。"] },
+                    { title: "国际人AI大数据实训营", company: "智能体与数据分析 | 2025.12 - 至今", desc: ["基于阿里云百炼平台，从0到1构建业务场景智能体；优化Prompt提升自动化内容生产的准确率。", "使用 Quick BI 对全国海量就业率数据进行多维清洗、分析与可视化呈现。"] }
+                ],
+                "校园组织": [
+                    { title: "校机器人协会", company: "核心干事 | 2025.09 - 至今", desc: ["深度参与技术培训统筹，覆盖50+人次；负责纳新宣发，成功招募50+成员。", "主动利用AI整理电子电路与底层控制知识，沉淀技术文档，大幅提升新人学习效率。"] },
+                    { title: "校AI实验室", company: "产品组成员 | 2026.01 - 至今", desc: ["熟练使用 MaxKB 搭建专属知识库、智能体和工作流，将前沿AI创意落地于解决校园师生的真实需求。"] },
+                    { title: "校园大使与社团干事", company: "活动统筹 | 2025.12 - 至今", desc: ["担任美团AIcoding学习社干事及新东方国际教育校园大使，构建120+人高活裂变群。", "作为学校与企业的对接枢纽，全流程负责联合宣发与校园招聘活动。"] }
+                ],
+                "自媒体运营": [
+                    { title: "个人自媒体主理人", company: "抖音平台 | 持续中", desc: ["独立运营账号，洞察热门算法机制进行爆款策划与剪辑，持续输出高质量AI视觉作品。"], 
+                      media: `<div style="display:flex; gap:10px; margin-top:10px;"><img src="抖音主页.jpg" style="width:48%; border-radius:8px;" onerror="this.style.display='none'"><img src="最高赞作品.jpg" style="width:48%; border-radius:8px;" onerror="this.style.display='none'"></div>` }
+                ]
+            },
+            certs: [
+                { n: "阿里云 Clouder: 利用大模型提升内容生产力 (2025.11)", i: "证书1.jpg" },
+                { n: "阿里云 Clouder: 基于百炼平台构建智能体应用 (2025.11)", i: "证书2.jpg" },
+                { n: "阿里巴巴 人工智能训练师证书 (高级) (2025.11)", i: "证书3.jpg" },
+                { n: "阿里巴巴 人工智能训练师证书 (初级) (2025.11)", i: "证书4.jpg" }
+            ],
+            edu: { s: "浙江水利水电学院", m: "机器人工程（本科 大一）", t: "2025.09 - 2029.06" }
+        };
+
+        const $ = id => document.getElementById(id);
+        const getEmail = () => resumeData.contact.email;
+
+        // ==========================================
+        // SPA 页面加载遮罩层对象 (Page Loading Transition)
+        // ==========================================
+        const pageLoading = {
+            container: document.querySelector(".loading-overlay"),
+            in(callback) {
+                this.container.classList.remove("loading_out");
+                setTimeout(() => {
+                    if (callback) callback();
+                }, 600); 
+            },
+            out() {
+                this.container.classList.add("loading_out");
+            }
+        };
+
+        // ==========================================
+        // 初始化滚动显现动画逻辑 (Scroll Reveal)
+        // ==========================================
+        window.initScrollReveal = function() {
+            const revealElements = document.querySelectorAll('.article-card:not(.scroll-reveal-applied), .sidebar-card:not(.scroll-reveal-applied), .card:not(.scroll-reveal-applied)');
+            
+            let currentDelay = 0; 
+            let delayTimeout;
+            
+            const observer = new IntersectionObserver((entries, obs) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const el = entry.target;
+                        obs.unobserve(el); 
+                        
+                        setTimeout(() => {
+                            el.classList.add('visible');
+                            setTimeout(() => {
+                                el.classList.remove('scroll-reveal', 'visible', 'scroll-reveal-applied');
+                            }, 800);
+                        }, currentDelay);
+                        
+                        currentDelay += 150; 
+                    }
+                });
+                
+                clearTimeout(delayTimeout);
+                delayTimeout = setTimeout(() => { currentDelay = 0; }, 100);
+            }, { 
+                threshold: 0.1, 
+                rootMargin: '0px 0px -40px 0px' 
+            });
+
+            revealElements.forEach(el => {
+                el.classList.add('scroll-reveal', 'scroll-reveal-applied');
+                observer.observe(el);
+            });
+        };
+
+        // 全局方法：切换履历海报标签
+        window.switchResumeTab = function(index) {
+            document.querySelectorAll('.resume-poster').forEach((p, i) => {
+                p.classList.toggle('active', i === index);
+            });
+            const panels = [
+                document.getElementById('panel-0'),
+                document.getElementById('panel-1'),
+                document.getElementById('panel-2'),
+                document.getElementById('panel-certs') 
+            ];
+            panels.forEach((p, i) => {
+                if(p) p.classList.toggle('active', i === index);
+            });
+        };
+
+        function renderResumeContent() {
+            let html = `
+                <div class="card" style="margin-top: 0.5rem;">
+                    <h2 class="section-title">关于白糖</h2>
+                    <div style="display: flex; flex-wrap: wrap; margin-bottom: 1rem;">
+                        ${resumeData.skillsTags.map(t=>`<span class="badge">${t}</span>`).join('')}
+                    </div>
+                    <p style="margin-bottom: 1rem;">${resumeData.bio}</p>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-primary" onclick="window.location.href='tel:${resumeData.contact.phone}'" style="flex:1">拨打电话</button>
+                        <button class="btn btn-outline" onclick="copyEmail()" style="flex:1">复制邮箱</button>
+                    </div>
+                </div>
+
+                <!-- 画廊本地占位 -->
+                <div class="resume-gallery" id="resume-gallery">
+                    <div class="resume-poster active" onclick="switchResumeTab(0)">
+                        <img src="10002.webp" alt="竞赛与实战" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23cbd5e1%22 /><text x=%2250%25%22 y=%2250%25%22 font-family=%22sans-serif%22 font-size=%2216%22 fill=%22%23475569%22 text-anchor=%22middle%22 dy=%22.3em%22>图片丢失</text></svg>'">
+                        <div class="poster-overlay">🏆 竞赛与实战</div>
+                    </div>
+                    <div class="resume-poster" onclick="switchResumeTab(1)">
+                        <img src="10003.jpg" alt="校园组织" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23cbd5e1%22 /><text x=%2250%25%22 y=%2250%25%22 font-family=%22sans-serif%22 font-size=%2216%22 fill=%22%23475569%22 text-anchor=%22middle%22 dy=%22.3em%22>图片丢失</text></svg>'">
+                        <div class="poster-overlay">🤝 校园组织</div>
+                    </div>
+                    <div class="resume-poster" onclick="switchResumeTab(2)">
+                        <img src="10003.webp" alt="自媒体运营" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23cbd5e1%22 /><text x=%2250%25%22 y=%2250%25%22 font-family=%22sans-serif%22 font-size=%2216%22 fill=%22%23475569%22 text-anchor=%22middle%22 dy=%22.3em%22>图片丢失</text></svg>'">
+                        <div class="poster-overlay">📱 自媒体运营</div>
+                    </div>
+                    <div class="resume-poster" onclick="switchResumeTab(3)">
+                        <img src="10004.jpg" alt="教育与证书" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23cbd5e1%22 /><text x=%2250%25%22 y=%2250%25%22 font-family=%22sans-serif%22 font-size=%2216%22 fill=%22%23475569%22 text-anchor=%22middle%22 dy=%22.3em%22>图片丢失</text></svg>'">
+                        <div class="poster-overlay">🎓 教育与证书</div>
+                    </div>
+                </div>
+            `;
+
+            Object.keys(resumeData.experiences).forEach((k,i)=>{
+                html += `<div class="tab-panel ${i===0?'active':''}" id="panel-${i}"><div class="card timeline">
+                    ${resumeData.experiences[k].map(it=>`
+                        <div class="tl-item">
+                            <div class="tl-dot"></div>
+                            <div class="tl-header"><div class="tl-title">${it.title}</div><div class="tl-meta"><span>${it.company}</span></div></div>
+                            <div class="tl-body"><ul>${it.desc.map(d=>`<li>${d}</li>`).join('')}</ul>${it.media||''}</div>
+                        </div>`).join('')}
+                </div></div>`;
+            });
+            
+            html += `
+                <div class="tab-panel" id="panel-certs">
+                    <div class="card" style="margin-bottom:1rem;">
+                        <div style="font-size:1.1rem; font-weight:800; color:var(--text-strong);">${resumeData.edu.s}</div>
+                        <div style="color:var(--primary); font-weight:600; margin-top:0.2rem;">${resumeData.edu.m}</div>
+                        <div style="font-size:0.85rem; color:var(--text-muted); margin-top:0.2rem;">${resumeData.edu.t}</div>
+                    </div>
+                    <div class="card">
+                        <h3 style="font-size:1rem; margin-bottom:1rem; color:var(--text-strong);">资质证书</h3>
+                        ${resumeData.certs.map(c=>`
+                            <div class="cert-item">
+                                <div style="font-weight:700; margin-bottom:0.5rem; color:var(--text-strong);">☑ ${c.n}</div>
+                                <img src="${c.i}" style="max-width:280px; width:100%; border-radius:8px; cursor:zoom-in; box-shadow:var(--shadow-sm);" onclick="zoom(this.getAttribute('src'))" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22280%22 height=%22200%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23cbd5e1%22 /><text x=%2250%25%22 y=%2250%25%22 font-family=%22sans-serif%22 font-size=%2216%22 fill=%22%23475569%22 text-anchor=%22middle%22 dy=%22.3em%22>证书在云端丢失</text></svg>';">
+                            </div>`).join('')}
+                    </div>
+                </div>`;
+
+            $('resume-content').innerHTML = html;
+            window.bindDragScroll(document.getElementById('resume-gallery'));
+        }
+
+        window.zoom = function(src) {
+            if(!src) return;
+            $('modal-img').src = src; 
+            $('image-modal').classList.add('show');
+        }
+        window.closeLightboxModal = () => $('image-modal').classList.remove('show');
+
+        window.openWechat = function() { $('wechat-modal').classList.add('show'); }
+        window.closeWechatModal = function() { $('wechat-modal').classList.remove('show'); }
+        window.openSubscribe = function() { $('subscribe-modal').classList.add('show'); }
+        window.closeSubscribeModal = function() { $('subscribe-modal').classList.remove('show'); }
+
+        window.openGame = function(folderName) {
+            $('game-frame').src = encodeURI(folderName + '/index.html');
+            $('game-modal').classList.add('show');
+        }
+        window.closeGame = function() {
+            $('game-modal').classList.remove('show');
+            $('game-frame').src = ''; 
+        }
+
+        // ====== 增强导航逻辑：记录历史视图，并精确记录返回位置 ======
+        let viewHistory = [{ id: 'home', scrollY: 0 }];
+
+        window.navTo = function(viewId, isBack = false, targetScrollY = 0) {
+            const currentActive = document.querySelector('.view.active');
+            const currentViewId = currentActive ? currentActive.id.replace('view-', '') : '';
+            if (currentViewId === viewId) {
+                if(!isBack) window.scrollTo({top: 0, behavior: 'smooth'});
+                return;
+            }
+
+            // 保存离开当前页面前的滚动高度
+            if (!isBack && viewHistory.length > 0) {
+                viewHistory[viewHistory.length - 1].scrollY = window.scrollY;
+            }
+
+            pageLoading.in(() => {
+                document.querySelectorAll('video').forEach(video => { if (!video.paused) video.pause(); });
+                document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+                $('view-' + viewId).classList.add('active');
+                
+                // 在黑屏状态下瞬间完成坐标恢复定位
+                window.scrollTo(0, isBack ? targetScrollY : 0); 
+                
+                // 将新页面压入栈中
+                if (!isBack && (viewHistory.length === 0 || viewHistory[viewHistory.length - 1].id !== viewId)) {
+                    viewHistory.push({ id: viewId, scrollY: 0 });
+                }
+                
+                if(viewId !== 'home') {
+                    document.body.classList.add('content-mode');
+                    
+                    if(viewId === 'resume' && !$('resume-content').innerHTML.trim()) {
+                        renderResumeContent();
+                    }
+                    if(viewId === 'guestbook') loadComments(); 
+                    
+                } else {
+                    document.body.classList.remove('content-mode');
+                }
+
+                setTimeout(() => {
+                    pageLoading.out();
+                    setTimeout(() => {
+                        window.initScrollReveal();
+                    }, 50);
+                }, 300);
+            });
+        };
+
+        window.goBack = function() {
+            if (viewHistory.length > 1) {
+                viewHistory.pop(); // 弹出当前页面
+                let previousView = viewHistory[viewHistory.length - 1]; // 获取上一个页面
+                window.navTo(previousView.id, true, previousView.scrollY); // 带坐标返回
+            } else {
+                window.navTo('home', true, 0);
+            }
+        };
+
+        window.loadComments = function() {
+            let comments = JSON.parse(localStorage.getItem('baitang_comments') || '[]');
+            let html = '';
+            if(comments.length === 0) {
+                html = '<p style="text-align:center; color:var(--text-muted); padding:2rem 0;">还没有人留言哦，快来抢沙发！</p>';
+            } else {
+                comments.forEach(c => {
+                    html += `<div class="comment-item"><div class="comment-time">🕰️ ${c.time}</div><div class="comment-text">${c.text}</div></div>`;
+                });
+            }
+            $('comment-list').innerHTML = html;
+        }
+
+        window.submitComment = function() {
+            let input = $('comment-input');
+            let text = input.value.trim();
+            if(!text) { alert("留言不能为空哦！"); return; }
+            
+            let comments = JSON.parse(localStorage.getItem('baitang_comments') || '[]');
+            let now = new Date();
+            let timeString = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0') + ' ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+            
+            comments.unshift({ text: text.replace(/</g, "&lt;").replace(/>/g, "&gt;"), time: timeString });
+            localStorage.setItem('baitang_comments', JSON.stringify(comments));
+            
+            input.value = ''; loadComments(); 
+            alert("留言成功！感谢你的期待 ✨");
+        }
+
+        function initSiteRunTime() {
+            const startDate = new Date('2026-03-01T00:00:00').getTime();
+            function updateRunTime() {
+                const now = new Date().getTime();
+                const diff = now - startDate;
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                let timeEl = $('run-time');
+                if(timeEl) timeEl.innerText = `${days} 天 ${hours} 时 ${mins} 分`;
+            }
+            updateRunTime(); setInterval(updateRunTime, 60000);
+        }
+
+        function initTransparencyToggle() {
+            const btn = $('opacity-btn');
+            if(!btn) return;
+            let opaState = localStorage.getItem('opa_state');
+            const setOpaState = (state) => {
+                if(state === 'focus-content') {
+                    document.documentElement.setAttribute('data-opa-state', 'focus-content');
+                    try { localStorage.setItem('opa_state', 'focus-content'); } catch(e){}
+                } else {
+                    document.documentElement.removeAttribute('data-opa-state');
+                    try { localStorage.removeItem('opa_state'); } catch(e){}
+                }
+            };
+            setOpaState(opaState);
+            btn.addEventListener('click', () => {
+                const currentState = document.documentElement.getAttribute('data-opa-state');
+                if(currentState === 'focus-content') setOpaState('focus-bg');
+                else setOpaState('focus-content');
+            });
+        }
+
+        window.copyEmail = function() {
+            const email = getEmail();
+            if(navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(email).then(() => alert("邮箱已复制: " + email)).catch(() => prompt("请手动复制:", email));
+            } else { prompt("请手动复制:", email); }
+        };
+
+        // ==========================================
+        // 首页寄语动态轮播逻辑 
+        // ==========================================
+        function initGreetingAnimation() {
+            const greetingEl = document.getElementById('dynamic-greeting');
+            if (!greetingEl) return;
+
+            const phrases = [
+                `<img src="桂花.png" class="osmanthus-icon" alt="桂花" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%23fbbf24%22><path d=%22M12 2C12 2 14 8 20 10C20 10 14 12 12 18C12 18 10 12 4 10C4 10 10 8 12 2Z%22/></svg>'">欲买桂花同载酒`,
+                `终不似`,
+                `少年游`
+            ];
+            
+            let currentIndex = 0;
+            greetingEl.innerHTML = phrases[currentIndex];
+
+            setInterval(() => {
+                greetingEl.classList.add('fade-out'); 
+                
+                setTimeout(() => {
+                    currentIndex = (currentIndex + 1) % phrases.length;
+                    greetingEl.innerHTML = phrases[currentIndex]; 
+                    greetingEl.classList.remove('fade-out'); 
+                }, 400);
+            }, 1800); 
+        }
+
+        // ==========================================
+        // 初始化赛博朋克动画逻辑 (Canvas 物理引力网格)
+        // ==========================================
+        function initCyberAnimation() {
+            const gridCanvas = document.querySelector('.cyber-grid-canvas');
+            if(!gridCanvas) return;
+            const gctx = gridCanvas.getContext('2d');
+            let gw, gh;
+
+            function resizeGrid() {
+                gw = gridCanvas.width = window.innerWidth * 2;
+                gh = gridCanvas.height = window.innerHeight * 1.5; 
+            }
+            window.addEventListener('resize', resizeGrid);
+            resizeGrid();
+
+            let gMouseX = -1000;
+            let gMouseY = -1000;
+            let gDistortion = 0;
+            let gIdleTimer;
+            window.currentDist = 0; 
+            let explosionForce = 0;
+
+            window.addEventListener('mousemove', (e) => {
+                let pctX = e.clientX / window.innerWidth;
+                let pctY = e.clientY / window.innerHeight;
+                
+                gMouseX = gw * 0.25 + pctX * (gw * 0.5);
+                gMouseY = gh * 0.4 + pctY * (gh * 0.6);
+                
+                gDistortion = 1;
+                clearTimeout(gIdleTimer);
+                gIdleTimer = setTimeout(() => {
+                    gDistortion = 0;
+                }, 1500);
+            });
+
+            // 全局点击触发核爆级扰动
+            window.addEventListener('click', (e) => {
+                let pctX = e.clientX / window.innerWidth;
+                let pctY = e.clientY / window.innerHeight;
+                gMouseX = gw * 0.25 + pctX * (gw * 0.5);
+                gMouseY = gh * 0.4 + pctY * (gh * 0.6);
+                
+                explosionForce = 3; // 点击时引力增强3倍
+                gDistortion = 1;
+                
+                clearTimeout(gIdleTimer);
+                gIdleTimer = setTimeout(() => {
+                    gDistortion = 0;
+                }, 2000); // 延缓平息时间
+            });
+
+            let gTime = 0;
+            const spacingX = 80; 
+            const spacingY = 50; 
+
+            function drawGrid() {
+                gctx.clearRect(0, 0, gw, gh);
+                gTime += 2; 
+                let offset = gTime % spacingY;
+
+                window.currentDist += (gDistortion - window.currentDist) * 0.08;
+                explosionForce += (0 - explosionForce) * 0.05; // 爆炸力逐渐衰减
+                
+                let activeForce = window.currentDist + explosionForce;
+
+                gctx.lineWidth = 1.5;
+
+                const drawPerturbedLine = (isVertical, fixedCoord) => {
+                    gctx.beginPath();
+                    let segments = isVertical ? Math.ceil(gh / 20) : Math.ceil(gw / 40);
+                    for (let i = 0; i <= segments; i++) {
+                        let x = isVertical ? fixedCoord : i * 40;
+                        let y = isVertical ? i * 20 : fixedCoord;
+
+                        if (activeForce > 0.01) {
+                            let dx = x - gMouseX;
+                            let dy = y - gMouseY;
+                            let dist = Math.sqrt(dx*dx + dy*dy);
+                            let maxRadius = 400 + (explosionForce * 100);
+
+                            if (dist < maxRadius) {
+                                let force = Math.pow((maxRadius - dist) / maxRadius, 2) * 150 * activeForce;
+                                let angle = Math.atan2(dy, dx);
+                                let ripple = Math.sin(dist / 25 - gTime * 0.1) * force;
+                                
+                                x += Math.cos(angle) * ripple;
+                                y += Math.sin(angle) * ripple;
+                            }
+                        }
+
+                        if (i === 0) gctx.moveTo(x, y);
+                        else gctx.lineTo(x, y);
+                    }
+                    gctx.stroke();
+                };
+
+                gctx.strokeStyle = 'rgba(0, 243, 255, 0.4)';
+                for (let x = 0; x <= gw; x += spacingX) drawPerturbedLine(true, x);
+
+                gctx.strokeStyle = 'rgba(255, 0, 255, 0.4)';
+                for (let y = offset; y <= gh; y += spacingY) drawPerturbedLine(false, y);
+
+                requestAnimationFrame(drawGrid);
+            }
+            drawGrid();
+
+            // Solar System Control
+            let isAutoMode = false;
+            let targetAngle = 0;   
+            let currentAngle = 0;  
+            let autoSpeed = 1.2; 
+            let solarMouseX = window.innerWidth / 2;
+            let solarMouseY = window.innerHeight / 2;
+
+            const orbit = document.getElementById('orbit-container');
+            const cyberCore = document.getElementById('cyber-core');
+            const solarSystem = document.getElementById('cyber-solar-system');
+            const btnMouse = document.getElementById('btn-mouse');
+            const btnAuto = document.getElementById('btn-auto');
+            const cardsOrbitContainer = document.getElementById('cyber-cards-container');
+            const cardsItems = document.querySelectorAll('.cyber-card-item');
+
+            window.addEventListener("mousemove", (e) => {
+                solarMouseX = e.clientX;
+                solarMouseY = e.clientY;
+            });
+
+            function renderSolarLoop() {
+                if (isAutoMode) {
+                    targetAngle += autoSpeed;
+                } else {
+                    if(solarSystem) {
+                        const rect = solarSystem.getBoundingClientRect();
+                        const centerX = rect.left + rect.width / 2;
+                        const centerY = rect.top + rect.height / 2;
+                        const dx = solarMouseX - centerX;
+                        const dy = solarMouseY - centerY;
+                        
+                        let rawAngle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+                        let diff = rawAngle - (targetAngle % 360);
+                        while (diff > 180) diff -= 360;
+                        while (diff < -180) diff += 360;
+                        targetAngle += diff;
+                    }
+                }
+
+                currentAngle += (targetAngle - currentAngle) * 0.08;
+                
+                if(orbit) orbit.style.transform = `rotate(${currentAngle}deg)`;
+                if(cyberCore) cyberCore.style.transform = `rotate(${currentAngle * 0.4}deg)`;
+
+                let globalCyberAngle = currentAngle * 0.3; 
+                if (cardsOrbitContainer) cardsOrbitContainer.style.transform = `rotate(${globalCyberAngle}deg)`;
+                
+                if (cardsItems.length > 0) {
+                    cardsItems.forEach(card => {
+                        card.style.transform = `rotate(calc(${-globalCyberAngle}deg - var(--deg))) scale(var(--s, 1))`;
+                    });
+                }
+                requestAnimationFrame(renderSolarLoop);
+            }
+            renderSolarLoop();
+
+            if(btnMouse && btnAuto) {
+                btnMouse.addEventListener('click', () => {
+                    isAutoMode = false;
+                    btnMouse.classList.add('active');
+                    btnAuto.classList.remove('active');
+                });
+                btnAuto.addEventListener('click', () => {
+                    isAutoMode = true;
+                    btnAuto.classList.add('active');
+                    btnMouse.classList.remove('active');
+                });
+            }
+        }
+        
+        // ==========================================
+        // 核心组合 Poker 扑克翻牌画廊工厂逻辑
+        // ==========================================
+        function createPokerApp(containerId, imgArray) {
+            return {
+                container: document.getElementById(containerId),
+                imgSources: imgArray,
+                imgs: [],
+                img_index: 0,
+                poker_eles: [],
+                transform_datas: [
+                    "rotate(-25deg) translateX(-100%) translateY(30px)",
+                    "rotate(-15deg) translateX(-60%) translateY(10px)",
+                    "rotate(-5deg) translateX(-20%) translateY(0px)",
+                    "rotate(5deg) translateX(20%) translateY(0px)",
+                    "rotate(15deg) translateX(60%) translateY(10px)",
+                    "rotate(25deg) translateX(100%) translateY(30px)"
+                ],
+                init() {
+                    if(!this.container) return;
+                    
+                    this.imgSources.forEach((src) => {
+                        let img = new Image();
+                        img.src = src;
+                        img.onerror = () => { img.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="280" height="400"><rect width="100%" height="100%" fill="#1e293b" /><text x="50%" y="50%" font-family="sans-serif" font-size="16" fill="#94a3b8" text-anchor="middle" dy=".3em">图片丢失</text></svg>'; };
+                        this.imgs.push(img);
+                    });
+                    
+                    let html = '';
+                    for(let i=0; i<6; i++) {
+                        html += `<div class="poker-card"><img src="${this.imgSources[i % this.imgSources.length]}" alt="Card ${i}"></div>`;
+                    }
+                    this.container.innerHTML = html;
+                    
+                    this.poker_eles = [...this.container.querySelectorAll(".poker-card")];
+                    this.poker_eles.forEach((obj, index) => {
+                        obj.nums = index;
+                        obj.style.zIndex = index;
+                        obj.style.transform = this.transform_datas[index];
+                    });
+                    this.img_index = 6 % this.imgs.length;
+                },
+                move() {
+                    if (!this.poker_eles || this.poker_eles.length === 0) return;
+                    this.poker_eles.forEach((ele) => {
+                        let nums = ele.nums;
+                        if (nums + 1 >= this.poker_eles.length) {
+                            nums = 0;
+                            ele.style.transition = "none"; 
+                            ele.querySelector("img").src = this.imgs[this.img_index].src;
+                            this.img_index++;
+                            if (this.img_index >= this.imgs.length) this.img_index = 0;
+                        } else {
+                            nums += 1;
+                            ele.style.transition = "transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)"; 
+                        }
+                        ele.style.zIndex = nums;
+                        ele.style.transform = this.transform_datas[nums];
+                        ele.nums = nums;
+                    });
+                }
+            };
+        }
+
+        const comicImages = [
+            "AI漫剧/AI漫剧.jpg",
+            "AI漫剧/max飞升.png",
+            "AI漫剧/花中少女.png",
+            "AI漫剧/火影.png",
+            "AI漫剧/霓虹.jpg",
+            "AI漫剧/水墨风.png"
+        ];
+        
+        const photoImages = [];
+        for(let i=1; i<=14; i++) {
+            photoImages.push(`摄影作品/${i}.jpg`);
+        }
+
+        window.comicPoker = createPokerApp('comic-poker-container', comicImages);
+        window.photoPoker = createPokerApp('photo-poker-container', photoImages);
+
+        // ==========================================
+        // 全局事件加载与监听器
+        // ==========================================
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            const schoolGallery = document.getElementById('school-gallery');
+            if(schoolGallery) window.bindDragScroll(schoolGallery);
+
+            initTransparencyToggle(); 
+            initSiteRunTime();
+            initGreetingAnimation(); 
+            initCyberAnimation(); 
+            
+            if (window.comicPoker) window.comicPoker.init();
+            if (window.photoPoker) window.photoPoker.init();
+            
+            // 初次加载页面时：延迟半秒褪去 Loading 遮罩
+            setTimeout(() => {
+                pageLoading.out();
+                setTimeout(() => window.initScrollReveal(), 50); 
+            }, 500);
+
+            const fab = $('back-top');
+            
+            window.addEventListener('scroll', () => {
+                if(window.scrollY > 300) fab.classList.add('show');
+                else fab.classList.remove('show');
+            }, { passive: true });
+            
+            fab.addEventListener('click', () => window.scrollTo({top: 0, behavior: 'smooth'}));
+        });
+    </script>
+</body>
+</html>
